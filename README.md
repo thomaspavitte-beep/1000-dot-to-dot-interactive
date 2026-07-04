@@ -11,18 +11,21 @@ Both are self-contained HTML files: no build step, no dependencies, no server re
 
 Just open `index.html` (scroll mode) or `play.html` (play mode) in any modern web browser — double-click it, or drag it into a browser window. Each page links to the other.
 
-## Multiple artworks
+## Multiple artworks & the Drawings switcher
 
-Both pages show the built-in drawing by default, and accept `?art=<id>` in the URL to show a different one (e.g. `index.html?art=marilyn`). Extra artworks live as small `art/<id>.js` files next to the HTML.
+Both pages show the built-in drawing by default, and accept `?art=<id>` in the URL to show a different one (e.g. `index.html?art=taj-mahal`). Extra artworks live as small `art/<id>.js` files next to the HTML.
 
-To add an artwork:
+Drawings listed in `art/manifest.js` appear in the **Drawings** button on both pages — a picker showing each drawing's title, its book, and the book cover. When a drawing is completed, a card appears crediting the book (with an optional "Get the book" link).
+
+To feature a new drawing:
 
 1. Open `tools/convert.html` in a browser.
 2. Drop in the artwork's SVG (a single continuous path) — or paste the raw path data.
 3. Give it an id and title, click **Convert**, check the preview, and download the generated file into the `art/` folder.
-4. Open `index.html?art=<id>` or `play.html?art=<id>`.
+4. Add an entry to `art/manifest.js` (id, title, book name, cover path, optional buy link).
+5. Drop the book cover image into `covers/` — until it exists, a lettered tile is shown instead.
 
-If an artwork can't be loaded, the pages quietly fall back to the built-in drawing.
+If an artwork can't be loaded, the pages quietly fall back to the built-in drawing; if the manifest is missing, the Drawings button simply doesn't appear.
 
 ## Put it online (free) with GitHub Pages
 
