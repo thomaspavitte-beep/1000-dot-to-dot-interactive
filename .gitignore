@@ -12,3 +12,6 @@ Icon?
 # Logs / temp
 *.log
 node_modules/
+
+# Source artwork exports stay local — only generated art/<id>.js files are published
+SVG/
