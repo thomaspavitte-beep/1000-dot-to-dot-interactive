@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dot-to-Dot Artwork Converter</title>
+<style>
+  :root{ --ink:#111418; --accent:#e4572e; --bg:#fbfbf9; --muted:#8a9099; }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:28px;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
+  h1{font-size:19px;margin:0 0 4px;}
+  p.lead{color:var(--muted);font-size:13px;margin:0 0 20px;max-width:640px;}
+  .row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+  .col{flex:1 1 420px;min-width:320px;}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.04em;}
+  input[type=text],textarea{width:100%;font:inherit;font-size:13px;border:1px solid #d7dbe0;border-radius:8px;padding:8px 10px;background:#fff;}
+  textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;resize:vertical;}
+  #drop{border:2px dashed #d7dbe0;border-radius:12px;padding:26px;text-align:center;color:var(--muted);
+    font-size:13px;background:#fff;transition:border-color .2s,background .2s;cursor:pointer;}
+  #drop.over{border-color:var(--accent);background:#fff7f4;}
+  button{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:#fff;
+    border:1px solid #d7dbe0;border-radius:999px;padding:8px 16px;cursor:pointer;margin-right:8px;margin-top:12px;}
+  button:hover{border-color:var(--accent);color:var(--accent);}
+  button.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  button.primary:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+  #report{font-size:13px;line-height:1.55;margin-top:14px;}
+  #report .ok{color:#1a7f37;font-weight:600;}
+  #report .warn{color:#b35c00;}
+  #report .err{color:#c0392b;font-weight:600;}
+  #previewWrap{background:#fff;border:1px solid #e4e7ea;border-radius:12px;padding:10px;margin-top:14px;}
+  #preview{width:100%;height:auto;display:block;}
+  #preview path{fill:none;stroke:var(--ink);stroke-width:1.2;vector-effect:non-scaling-stroke;}
+  #preview circle{fill:var(--accent);}
+  .small{font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+  <h1>Dot-to-Dot Artwork Converter</h1>
+  <p class="lead">Turns one of the book artworks (a single continuous SVG path) into an
+  <code>art/&lt;id&gt;.js</code> data file for the scroll and play pages. Drop an SVG file below,
+  or paste the raw <code>d="…"</code> path data. Everything runs locally in this page — nothing is uploaded.</p>
+
+  <div class="row">
+    <div class="col">
+      <div id="drop">Drop an .svg file here (or click to choose)</div>
+      <input type="file" id="file" accept=".svg,image/svg+xml" style="display:none" />
+
+      <label for="pathIn">…or paste path data / full SVG markup</label>
+      <textarea id="pathIn" rows="6" placeholder="M708.6,1093.1l40.5-102,1.5-60…  or  &lt;svg&gt;…&lt;/svg&gt;"></textarea>
+
+      <label for="artId">Artwork id (filename &amp; ?art= value — lowercase letters, digits, dashes)</label>
+      <input type="text" id="artId" placeholder="marilyn" />
+
+      <label for="artTitle">Title (shown in the page header)</label>
+      <input type="text" id="artTitle" placeholder="Marilyn" />
+
+      <label for="artCredit">Credit line</label>
+      <input type="text" id="artCredit" value="Artwork © Thomas Pavitte" />
+
+      <button class="primary" id="convert">Convert</button>
+
+      <div id="report"></div>
+    </div>
+
+    <div class="col">
+      <div id="previewWrap" hidden>
+        <svg id="preview" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="small" id="previewMeta"></div>
+      </div>
+
+      <label for="out">Output — save as <code>art/&lt;id&gt;.js</code> next to index.html</label>
+      <textarea id="out" rows="10" readonly placeholder="Converted file contents appear here"></textarea>
+      <button id="download" disabled>Download art/&lt;id&gt;.js</button>
+      <button id="copy" disabled>Copy to clipboard</button>
+      <div class="small" style="margin-top:10px">Then open <code>index.html?art=&lt;id&gt;</code> or <code>play.html?art=&lt;id&gt;</code>.</div>
+    </div>
+  </div>
+
+<script>
+// ---- Conversion core (round-trip verified against the embedded Elvis data) ----
+function convertPath(dRaw) {
+  const warnings = [];
+  const NUM = /-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/gi;
+  const round1 = v => Math.round(v * 10) / 10;
+
+  const groups = dRaw.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g);
+  if (!groups) throw new Error("No path commands found in the input.");
+
+  const ARITY = { M:2, L:2, H:1, V:1, C:6, S:4, Q:4, T:2 };
+  let cx = 0, cy = 0, sx = 0, sy = 0;
+  let pcx = null, pcy = null, pqx = null, pqy = null;
+  let started = false;
+  const out = [];
+  const push = (c, n) => { out.push({ c, n: n.map(round1) }); };
+
+  for (const g of groups) {
+    const letter = g[0];
+    const rel = letter === letter.toLowerCase();
+    const L = letter.toUpperCase();
+    const nums = (g.slice(1).match(NUM) || []).map(Number);
+
+    if (L === "Z") {
+      warnings.push("Z (close-path) command dropped — the drawing must be one open continuous line.");
+      pcx = pcy = pqx = pqy = null;
+      continue;
+    }
+    if (L === "A") {
+      throw new Error("Arc (A/a) commands are not supported. Re-export the artwork without arcs.");
+    }
+    const arity = ARITY[L];
+    if (nums.length === 0 || nums.length % arity !== 0) {
+      throw new Error("Malformed " + letter + " command: expected multiples of " + arity + " numbers, got " + nums.length + ".");
+    }
+
+    for (let i = 0; i < nums.length; i += arity) {
+      const a = nums.slice(i, i + arity);
+      const eff = (L === "M" && i > 0) ? "L" : L;
+      let nx, ny;
+      switch (eff) {
+        case "M": {
+          nx = rel && started ? cx + a[0] : a[0];
+          ny = rel && started ? cy + a[1] : a[1];
+          if (started) warnings.push("Multiple M (move) commands — path has more than one subpath. The engines assume ONE continuous line; the extra move will render as a jump.");
+          push("M", [nx, ny]);
+          sx = nx; sy = ny; started = true;
+          pcx = pcy = pqx = pqy = null;
+          break;
+        }
+        case "L": {
+          nx = rel ? cx + a[0] : a[0];
+          ny = rel ? cy + a[1] : a[1];
+          push("L", [nx, ny]);
+          pcx = pcy = pqx = pqy = null;
+          break;
+        }
+        case "H": {
+          nx = rel ? cx + a[0] : a[0]; ny = cy;
+          push("L", [nx, ny]);
+          pcx = pcy = pqx = pqy = null;
+          break;
+        }
+        case "V": {
+          nx = cx; ny = rel ? cy + a[0] : a[0];
+          push("L", [nx, ny]);
+          pcx = pcy = pqx = pqy = null;
+          break;
+        }
+        case "C": {
+          const c1x = rel ? cx + a[0] : a[0], c1y = rel ? cy + a[1] : a[1];
+          const c2x = rel ? cx + a[2] : a[2], c2y = rel ? cy + a[3] : a[3];
+          nx = rel ? cx + a[4] : a[4]; ny = rel ? cy + a[5] : a[5];
+          push("C", [c1x, c1y, c2x, c2y, nx, ny]);
+          pcx = c2x; pcy = c2y; pqx = pqy = null;
+          break;
+        }
+        case "S": {
+          const c1x = (pcx !== null) ? 2 * cx - pcx : cx;
+          const c1y = (pcy !== null) ? 2 * cy - pcy : cy;
+          const c2x = rel ? cx + a[0] : a[0], c2y = rel ? cy + a[1] : a[1];
+          nx = rel ? cx + a[2] : a[2]; ny = rel ? cy + a[3] : a[3];
+          push("C", [c1x, c1y, c2x, c2y, nx, ny]);
+          pcx = c2x; pcy = c2y; pqx = pqy = null;
+          break;
+        }
+        case "Q": {
+          const qx = rel ? cx + a[0] : a[0], qy = rel ? cy + a[1] : a[1];
+          nx = rel ? cx + a[2] : a[2]; ny = rel ? cy + a[3] : a[3];
+          push("C", [cx + (2/3)*(qx-cx), cy + (2/3)*(qy-cy), nx + (2/3)*(qx-nx), ny + (2/3)*(qy-ny), nx, ny]);
+          pqx = qx; pqy = qy; pcx = pcy = null;
+          break;
+        }
+        case "T": {
+          const qx = (pqx !== null) ? 2 * cx - pqx : cx;
+          const qy = (pqy !== null) ? 2 * cy - pqy : cy;
+          nx = rel ? cx + a[0] : a[0]; ny = rel ? cy + a[1] : a[1];
+          push("C", [cx + (2/3)*(qx-cx), cy + (2/3)*(qy-cy), nx + (2/3)*(qx-nx), ny + (2/3)*(qy-ny), nx, ny]);
+          pqx = qx; pqy = qy; pcx = pcy = null;
+          break;
+        }
+      }
+      cx = nx; cy = ny;
+      if (!started) { sx = cx; sy = cy; started = true; }
+    }
+  }
+
+  const dots = out.map(o => ({ x: o.n[o.n.length - 2], y: o.n[o.n.length - 1] }));
+  const d = out.map(o => o.c + o.n.join(" ").replace(/ -/g, "-")).join("");
+  return { d, dots, warnings, counts: out.reduce((m, o) => (m[o.c] = (m[o.c] || 0) + 1, m), {}) };
+}
+
+// ---- UI wiring ----
+const $ = id => document.getElementById(id);
+let lastResult = null, lastId = "";
+
+$("drop").addEventListener("click", () => $("file").click());
+["dragover","dragenter"].forEach(ev => $("drop").addEventListener(ev, e => { e.preventDefault(); $("drop").classList.add("over"); }));
+["dragleave","drop"].forEach(ev => $("drop").addEventListener(ev, e => { e.preventDefault(); $("drop").classList.remove("over"); }));
+$("drop").addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+$("file").addEventListener("change", e => { const f = e.target.files[0]; if (f) readFile(f); });
+
+function readFile(f) {
+  const r = new FileReader();
+  r.onload = () => {
+    $("pathIn").value = r.result;
+    if (!$("artId").value) {
+      const base = f.name.replace(/\.svg$/i, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      $("artId").value = base;
+      if (!$("artTitle").value) $("artTitle").value = base.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    }
+    convert();
+  };
+  r.readAsText(f);
+}
+
+function extractD(input) {
+  const t = input.trim();
+  if (t.startsWith("<")) {
+    const doc = new DOMParser().parseFromString(t, "image/svg+xml");
+    const paths = doc.querySelectorAll("path[d]");
+    if (!paths.length) throw new Error("No <path> element with a d attribute found in the SVG.");
+    if (paths.length > 1) throw new Error("SVG contains " + paths.length + " <path> elements — the artwork must be a single continuous path. Merge them first.");
+    return paths[0].getAttribute("d");
+  }
+  return t;
+}
+
+function convert() {
+  const rep = $("report");
+  rep.innerHTML = "";
+  try {
+    const id = $("artId").value.trim();
+    if (!/^[a-z0-9-]+$/.test(id)) throw new Error('Artwork id must be lowercase letters, digits, and dashes (e.g. "marilyn").');
+    const title = $("artTitle").value.trim() || id;
+    const credit = $("artCredit").value.trim();
+
+    const res = convertPath(extractD($("pathIn").value));
+    lastResult = res; lastId = id;
+
+    // Self-check: every dot must equal its command's endpoint.
+    const myCmds = res.d.match(/[MLC][^MLC]*/g);
+    if (myCmds.length !== res.dots.length) throw new Error("Internal error: command/dot count mismatch.");
+
+    const lines = [];
+    lines.push('<span class="ok">✓ Converted: ' + res.dots.length + ' dots</span> (' +
+      Object.entries(res.counts).map(([k,v]) => v + "×" + k).join(", ") + ")");
+    if (res.dots.length !== 1000) lines.push('<span class="warn">⚠ Not exactly 1000 dots — fine if intentional, the pages adapt to any count.</span>');
+    res.warnings.forEach(w => lines.push('<span class="warn">⚠ ' + w + "</span>"));
+    rep.innerHTML = lines.join("<br>");
+
+    // Preview.
+    const prev = $("preview");
+    prev.innerHTML = "";
+    const xs = res.dots.map(p => p.x), ys = res.dots.map(p => p.y);
+    const x0 = Math.min(...xs), y0 = Math.min(...ys), x1 = Math.max(...xs), y1 = Math.max(...ys);
+    const pad = Math.max(x1 - x0, y1 - y0) * 0.04;
+    prev.setAttribute("viewBox", [x0 - pad, y0 - pad, (x1 - x0) + 2 * pad, (y1 - y0) + 2 * pad].join(" "));
+    const NS = "http://www.w3.org/2000/svg";
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("d", res.d);
+    prev.appendChild(p);
+    const r = Math.max(x1 - x0, y1 - y0) * 0.0026;
+    const frag = document.createDocumentFragment();
+    res.dots.forEach(pt => {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", pt.x); c.setAttribute("cy", pt.y); c.setAttribute("r", r);
+      frag.appendChild(c);
+    });
+    prev.appendChild(frag);
+    $("previewWrap").hidden = false;
+    $("previewMeta").textContent = res.dots.length + " dots · bounds " +
+      Math.round(x1 - x0) + "×" + Math.round(y1 - y0);
+
+    // Output file.
+    const js = "// Generated by tools/convert.html — do not hand-edit.\n" +
+      "window.ARTWORKS = window.ARTWORKS || {};\n" +
+      'window.ARTWORKS["' + id + '"] = {\n' +
+      '  id: "' + id + '",\n' +
+      '  title: ' + JSON.stringify(title) + ',\n' +
+      '  credit: ' + JSON.stringify(credit) + ',\n' +
+      '  d: "' + res.d + '",\n' +
+      "  dots: " + JSON.stringify(res.dots) + "\n" +
+      "};\n";
+    $("out").value = js;
+    $("download").disabled = false;
+    $("copy").disabled = false;
+  } catch (err) {
+    rep.innerHTML = '<span class="err">✗ ' + err.message + "</span>";
+    $("out").value = "";
+    $("download").disabled = true;
+    $("copy").disabled = true;
+    $("previewWrap").hidden = true;
+  }
+}
+
+$("convert").addEventListener("click", convert);
+$("download").addEventListener("click", () => {
+  const blob = new Blob([$("out").value], { type: "text/javascript" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = lastId + ".js";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$("copy").addEventListener("click", () => navigator.clipboard.writeText($("out").value));
+</script>
+</body>
+</html>
