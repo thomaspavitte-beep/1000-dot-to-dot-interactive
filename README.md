@@ -4,8 +4,9 @@ An interactive web demo for the *1000 Dot-to-Dot* drawings, in two modes:
 
 - **Scroll to draw** (`index.html`) — as you scroll down the page, a single continuous line inks itself in across a field of 1,000 numbered dots, lighting each dot as it's connected, until the full portrait is revealed.
 - **Tap to connect** (`play.html`) — an actual playable dot-to-dot: tap the dots in numeric order, pinch or scroll-wheel to zoom, drag to pan. A pulsing ring marks the next dot, an idle "Show me" button flies you to it, and your progress is saved so you can come back later.
+- **Watch it draw** (`watch.html`) — cinema mode: the drawing draws itself like a timelapse pen. Play/pause (tap anywhere or press Space), speed control (½× to 4×), restart. Great for embedding or leaving on as ambient art.
 
-Both are self-contained HTML files: no build step, no dependencies, no server required.
+All are self-contained HTML files: no build step, no dependencies, no server required.
 
 ## View it locally
 
@@ -54,6 +55,7 @@ Host it as its own page (as above), then drop it into any page with an iframe:
 |------|---------|
 | `index.html` | The scroll-to-draw demo, self-contained (the drawing path is embedded inside it). |
 | `play.html` | The tap-to-connect game, also self-contained. |
+| `watch.html` | Cinema mode — the drawing draws itself. Also self-contained. |
 | `tools/convert.html` | Browser tool that turns an artwork SVG into an `art/<id>.js` file. |
 | `art/<id>.js` | Optional extra artworks (`art/test-spiral.js` is a small synthetic test drawing). |
 | `constants.ts` | The original source artwork — the single continuous SVG path the demo is built from. |

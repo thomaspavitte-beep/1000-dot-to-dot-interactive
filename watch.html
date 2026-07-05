@@ -3,55 +3,39 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>1000 Dot-to-Dot &middot; Tap to Connect</title>
+<title>1000 Dot-to-Dot &middot; Watch It Draw</title>
 <style>
   :root{ --ink:#111418; --dot:#c7ccd2; --dotDone:#111418; --accent:#e4572e; --bg:#fbfbf9; --muted:#8a9099; }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
     overscroll-behavior:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
-  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-    touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;}
-  svg{width:100vw;height:100vh;display:block;--dotr:2px;}
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;}
+  svg{width:min(94vw,94vh);height:min(94vw,94vh);display:block;}
   #full{fill:none;stroke:none;}                 /* hidden; only used for measuring */
   .ink{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;
     stroke-linejoin:round;vector-effect:non-scaling-stroke;}
-  .dot{fill:var(--dot);transition:fill .25s;r:var(--dotr);}
+  .dot{fill:var(--dot);transition:fill .25s;}
   .dot.done{fill:var(--dotDone);}
-  .num{fill:var(--muted);font-family:inherit;pointer-events:none;opacity:0;transition:opacity .3s;}
-  body.zoomnums .num{opacity:.75;}
-  #ring{fill:none;stroke:var(--accent);stroke-width:2;vector-effect:non-scaling-stroke;
-    transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-in-out infinite;}
-  #ring.miss{stroke:#c0392b;animation:none;}
-  @keyframes pulse{0%{transform:scale(1);opacity:.9}50%{transform:scale(1.7);opacity:.3}100%{transform:scale(1);opacity:.9}}
-  #targetNum{position:fixed;pointer-events:none;font-size:12px;font-weight:700;color:var(--accent);
-    background:#fff;border:1px solid var(--accent);border-radius:999px;padding:1px 7px;z-index:4;
-    transform:translate(-50%,-100%);}
+  #nib{fill:var(--accent);transition:opacity .5s;}
   #bar{position:fixed;left:0;top:0;height:3px;width:0%;background:var(--accent);z-index:5;}
   #hud{position:fixed;left:0;right:0;top:0;padding:16px 20px;display:flex;align-items:baseline;gap:14px;pointer-events:none;z-index:3;}
   #title{font-size:15px;font-weight:700;}
   #title span{font-weight:400;color:var(--muted);}
   #credit{font-size:11px;color:var(--muted);}
   #count{margin-left:auto;font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;color:var(--muted);}
+  #controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:6;display:flex;gap:8px;}
   #btns{position:fixed;right:20px;bottom:22px;z-index:6;display:flex;gap:8px;}
-  #btns button,#btns a{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:#fff;
+  #controls button,#btns button,#btns a{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:#fff;
     border:1px solid #d7dbe0;border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05);
     text-decoration:none;display:inline-block;}
-  #btns button:hover,#btns a:hover{border-color:var(--accent);color:var(--accent);}
-  #hint{position:fixed;left:0;right:0;bottom:26px;text-align:center;font-size:13px;color:var(--muted);
-    transition:opacity .4s;pointer-events:none;z-index:3;}
-  #showme{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--accent);color:#fff;
-    border:none;padding:9px 18px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
-    opacity:0;pointer-events:none;transition:opacity .4s;z-index:6;box-shadow:0 2px 8px rgba(228,87,46,.35);}
-  #showme.show{opacity:1;pointer-events:auto;}
+  #controls button:hover,#btns button:hover,#btns a:hover{border-color:var(--accent);color:var(--accent);}
+  #playBtn{min-width:76px;background:var(--ink);color:#fff;border-color:var(--ink);}
+  #playBtn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+  #speedBtn{min-width:56px;}
+  @media (max-width:560px){ #controls{bottom:70px;} }
   #done{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--ink);color:#fff;
     padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:opacity .5s;pointer-events:none;z-index:5;}
-  #resume{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#fff;border:1px solid #d7dbe0;
-    border-radius:14px;padding:14px 18px;z-index:7;box-shadow:0 4px 18px rgba(0,0,0,.1);text-align:center;display:none;}
-  #resume.show{display:block;}
-  #resume p{margin:0 0 10px;font-size:13px;font-weight:600;}
-  #resume button{font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;margin:0 4px;}
-  #resume #resumeYes{background:var(--ink);color:#fff;border:1px solid var(--ink);}
-  #resume #resumeNo{background:#fff;color:var(--ink);border:1px solid #d7dbe0;}
+  @media (max-width:560px){ #done{bottom:118px;} }
   /* Featured-drawings switcher (populated from art/manifest.js) */
   #gallery{position:fixed;right:20px;bottom:64px;background:#fff;border:1px solid #d7dbe0;border-radius:14px;
     padding:8px;z-index:7;box-shadow:0 8px 28px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto;
@@ -75,14 +59,15 @@
   .bcBook{font-size:13px;font-weight:700;max-width:240px;}
   .bcBuy{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;}
   .bcBuy:hover{text-decoration:underline;}
+  @media (max-width:560px){ #bookCard{bottom:166px;} }
 </style>
 </head>
 <body>
   <div id="bar"></div>
   <div id="hud">
-    <div id="title">1000 Dot-to-Dot <span>&middot; tap to connect</span></div>
+    <div id="title">1000 Dot-to-Dot <span>&middot; watch it draw</span></div>
     <div id="credit"></div>
-    <div id="count">Find dot 1 &middot; 0 / 1000</div>
+    <div id="count">Dot 0 / 1000</div>
   </div>
 
   <div id="stage">
@@ -91,32 +76,26 @@
       <path id="inkDone" class="ink" d="" />
       <path id="inkPartial" class="ink" d="" />
       <g id="dots"></g>
-      <g id="nums"></g>
-      <circle id="ring" r="0" />
+      <circle id="nib" r="0" />
     </svg>
   </div>
 
-  <div id="targetNum" hidden></div>
+  <div id="controls">
+    <button id="playBtn">Pause</button>
+    <button id="speedBtn" title="Drawing speed">1&times;</button>
+    <button id="restartBtn">Restart</button>
+  </div>
   <div id="btns">
     <button id="galBtn" style="display:none">Drawings</button>
     <a id="scrollLink" href="index.html">Scroll mode</a>
-    <a id="watchLink" href="watch.html">Watch</a>
-    <button id="fitBtn">Fit</button>
-    <button id="resetBtn">Start over</button>
+    <a id="playLink" href="play.html">Play mode</a>
   </div>
   <div id="gallery"></div>
   <div id="bookCard"></div>
-  <div id="hint">Tap dot 1 to start &middot; drag to pan, pinch or scroll-wheel to zoom</div>
-  <button id="showme">Show me the next dot</button>
-  <div id="done">&#10003; Complete &mdash; you connected all 1000 dots</div>
-  <div id="resume">
-    <p id="resumeMsg">Continue where you left off?</p>
-    <button id="resumeYes">Continue</button>
-    <button id="resumeNo">Start over</button>
-  </div>
+  <div id="done">&#10003; Complete &mdash; all 1000 dots connected</div>
 
   <script>
-    console.log("1000 Dot-to-Dot build: play v1");
+    console.log("1000 Dot-to-Dot build: watch v1");
 
     // Embedded default artwork (same drawing as index.html, converter-normalized).
     const DOTS=[{"x":708.6,"y":1093.1},{"x":749.1,"y":991.1},{"x":750.6,"y":931.1},{"x":705,"y":842},{"x":743.6,"y":725.8},{"x":723.4,"y":726.7},{"x":665.2,"y":655.2},{"x":692,"y":719.9},{"x":676.5,"y":659.3},{"x":680,"y":735.7},{"x":671.5,"y":712.4},{"x":664.8,"y":739.3},{"x":657.5,"y":719.7},{"x":672.1,"y":731.5},{"x":685.5,"y":717.5},{"x":662.5,"y":705.2},{"x":667,"y":678.2},{"x":656.3,"y":627.4},{"x":690.8,"y":671.3},{"x":661.3,"y":618.2},{"x":654,"y":599.7},{"x":682.5,"y":643.1},{"x":700.2,"y":643.1},{"x":650.2,"y":635.4},{"x":636.7,"y":610},{"x":592.9,"y":701},{"x":507.2,"y":764.7},{"x":466.2,"y":772.6},{"x":402.5,"y":738.8},{"x":359.5,"y":680.7},{"x":356.8,"y":649.2},{"x":368.8,"y":629.8},{"x":393.5,"y":626.6},{"x":415.1,"y":648.4},{"x":419,"y":636},{"x":423.4,"y":640.7},{"x":405.7,"y":644.3},{"x":411.8,"y":637.4},{"x":421.8,"y":646.5},{"x":430.9,"y":635.7},{"x":419.8,"y":628.6},{"x":400.8,"y":639.1},{"x":407.9,"y":652.6},{"x":428,"y":647.4},{"x":431.1,"y":627.3},{"x":403.7,"y":629.6},{"x":395.8,"y":643.5},{"x":399.1,"y":654.5},{"x":414.5,"y":657.1},{"x":430.1,"y":651.4},{"x":439,"y":634.7},{"x":393.4,"y":633.3},{"x":378.8,"y":644.2},{"x":375.7,"y":655.1},{"x":390.2,"y":631.4},{"x":403.5,"y":626.2},{"x":460.5,"y":624.1},{"x":497.7,"y":633.2},{"x":476.1,"y":623.5},{"x":437.6,"y":629.4},{"x":442.1,"y":639.8},{"x":469.1,"y":644.9},{"x":433.4,"y":660.8},{"x":405.9,"y":665.1},{"x":387,"y":660.4},{"x":379.7,"y":635.8},{"x":378.3,"y":665.9},{"x":406,"y":693.2},{"x":431.6,"y":687.3},{"x":380.4,"y":682.7},{"x":366,"y":663.4},{"x":369.3,"y":638.3},{"x":392.1,"y":693.9},{"x":398.1,"y":676.9},{"x":372.3,"y":657.8},{"x":374.3,"y":634.3},{"x":391.5,"y":621.3},{"x":459.1,"y":630.6},{"x":493.5,"y":625.2},{"x":481,"y":636.8},{"x":458.5,"y":635.4},{"x":478.6,"y":645.2},{"x":448.1,"y":637},{"x":429.1,"y":619.5},{"x":373,"y":624},{"x":348.3,"y":638.6},{"x":320.4,"y":635.5},{"x":293.6,"y":613.3},{"x":316.4,"y":625.8},{"x":308.4,"y":603.8},{"x":321.4,"y":624},{"x":303.5,"y":611.4},{"x":332.5,"y":618.8},{"x":328.6,"y":594.4},{"x":330.7,"y":625.5},{"x":320.2,"y":602.7},{"x":341.1,"y":615.8},{"x":346.1,"y":593.2},{"x":349.8,"y":616.1},{"x":357.5,"y":590.8},{"x":358.1,"y":608.6},{"x":377.4,"y":596.8},{"x":407.8,"y":589.3},{"x":407.8,"y":582.9},{"x":384.9,"y":608.4},{"x":386.7,"y":588.3},{"x":377.6,"y":610.1},{"x":375.8,"y":589.1},{"x":370.8,"y":609.7},{"x":366.7,"y":591},{"x":365.4,"y":613.4},{"x":418.2,"y":588.5},{"x":433,"y":589.5},{"x":401.5,"y":603.5},{"x":430.6,"y":584.5},{"x":416.8,"y":602.2},{"x":442,"y":583.6},{"x":430.5,"y":605.7},{"x":458.6,"y":586.1},{"x":449.1,"y":600.8},{"x":475.5,"y":586},{"x":501.4,"y":582.6},{"x":515.8,"y":585.8},{"x":479.1,"y":580.8},{"x":462.6,"y":598.8},{"x":482,"y":592.4},{"x":505.9,"y":595},{"x":452.1,"y":583.1},{"x":422.2,"y":606.6},{"x":337.2,"y":593.1},{"x":283.4,"y":586.8},{"x":282.3,"y":560.7},{"x":316.2,"y":518.2},{"x":373,"y":501.4},{"x":418.9,"y":504.6},{"x":341.4,"y":505.2},{"x":274.5,"y":529.8},{"x":225.9,"y":529.5},{"x":178.9,"y":507.3},{"x":151,"y":506.7},{"x":202,"y":511.2},{"x":161.4,"y":488.8},{"x":147.2,"y":449.9},{"x":152.3,"y":403},{"x":130.4,"y":381.2},{"x":161.4,"y":445.9},{"x":157,"y":539.7},{"x":137.1,"y":567.6},{"x":104.6,"y":594.9},{"x":99.2,"y":610.2},{"x":117.7,"y":632.6},{"x":152.9,"y":646.4},{"x":175.6,"y":644.1},{"x":195.4,"y":650},{"x":201,"y":657.7},{"x":203.7,"y":650.3},{"x":192.1,"y":659.4},{"x":195.6,"y":646.9},{"x":211.3,"y":658},{"x":185.3,"y":660.7},{"x":189.7,"y":642.8},{"x":207.4,"y":642.5},{"x":206.1,"y":664.8},{"x":196.4,"y":671.2},{"x":179.1,"y":666.4},{"x":174,"y":653.3},{"x":182.8,"y":637.5},{"x":181.5,"y":654.5},{"x":194.4,"y":664},{"x":215,"y":646.3},{"x":173.1,"y":636.8},{"x":143.3,"y":653.2},{"x":143,"y":666.1},{"x":144.4,"y":647.5},{"x":166.2,"y":648.1},{"x":156.4,"y":654.4},{"x":140.4,"y":652.6},{"x":151.8,"y":659.6},{"x":166.3,"y":636.9},{"x":183.2,"y":664.3},{"x":215.1,"y":670.1},{"x":234.8,"y":664.1},{"x":235.3,"y":651.8},{"x":192.5,"y":625.2},{"x":183.8,"y":629},{"x":176,"y":612.5},{"x":172.3,"y":623.3},{"x":161.3,"y":609.8},{"x":139.9,"y":604.3},{"x":143.1,"y":623.5},{"x":126.3,"y":600},{"x":99.1,"y":599.1},{"x":104.4,"y":625.8},{"x":119.6,"y":627.5},{"x":107.3,"y":605.6},{"x":121.2,"y":620.6},{"x":112.4,"y":603.8},{"x":129.4,"y":623.5},{"x":129.4,"y":612.1},{"x":135.9,"y":601},{"x":135.1,"y":624.8},{"x":146.7,"y":609.3},{"x":120.2,"y":607.5},{"x":142,"y":629.3},{"x":153.2,"y":624.1},{"x":148.9,"y":618.9},{"x":155.8,"y":611.4},{"x":158.2,"y":624.1},{"x":158.9,"y":601.8},{"x":163.5,"y":625.3},{"x":170.2,"y":612.5},{"x":169.5,"y":624.5},{"x":182.9,"y":616.9},{"x":177.3,"y":628.8},{"x":187,"y":620.3},{"x":193.6,"y":629.6},{"x":217.5,"y":634.6},{"x":220.8,"y":649.8},{"x":200.6,"y":634.6},{"x":164.6,"y":632},{"x":144.9,"y":638.4},{"x":131.3,"y":633.7},{"x":123.6,"y":641.4},{"x":149.1,"y":640.5},{"x":162.9,"y":661.9},{"x":181.3,"y":677.2},{"x":217.6,"y":674.4},{"x":239.4,"y":657.5},{"x":251.6,"y":683.3},{"x":256.1,"y":737.3},{"x":249.7,"y":775.4},{"x":255.7,"y":815.3},{"x":246.6,"y":838.9},{"x":241.5,"y":846.5},{"x":255.8,"y":863.5},{"x":272.5,"y":871.7},{"x":317.7,"y":856.9},{"x":338.6,"y":863.3},{"x":353.6,"y":855.1},{"x":337.4,"y":848.2},{"x":307.2,"y":868},{"x":300.9,"y":858},{"x":313.2,"y":852.6},{"x":336.8,"y":853.8},{"x":340,"y":858.1},{"x":294.1,"y":867.6},{"x":278.5,"y":863.8},{"x":261.6,"y":849.5},{"x":244.4,"y":826.2},{"x":255.4,"y":771.8},{"x":250.2,"y":741.3},{"x":251.8,"y":848},{"x":267.4,"y":859.9},{"x":289.3,"y":872.2},{"x":322.3,"y":849.1},{"x":356,"y":850.2},{"x":370.5,"y":843.8},{"x":380.4,"y":830.4},{"x":375.2,"y":804},{"x":364.4,"y":791},{"x":339,"y":791.4},{"x":315.2,"y":808.3},{"x":310.5,"y":818.9},{"x":327.2,"y":802.8},{"x":357.1,"y":785.6},{"x":383,"y":793.6},{"x":410.1,"y":836},{"x":439,"y":868.5},{"x":461.4,"y":904.9},{"x":425.5,"y":846.8},{"x":398.3,"y":828},{"x":392,"y":800.6},{"x":418.8,"y":856.4},{"x":403.8,"y":808.4},{"x":421.9,"y":839.5},{"x":382.1,"y":800.9},{"x":371.9,"y":808.8},{"x":378.5,"y":840.1},{"x":366.1,"y":855},{"x":317.8,"y":866.4},{"x":312.9,"y":878.7},{"x":320.1,"y":892.4},{"x":316.9,"y":907.5},{"x":317.5,"y":876.5},{"x":311.2,"y":872.7},{"x":293.6,"y":877.3},{"x":287.5,"y":889.5},{"x":280.3,"y":895.4},{"x":287.3,"y":881.8},{"x":297.1,"y":881.8},{"x":281.8,"y":873.4},{"x":272.6,"y":878.8},{"x":260.1,"y":890.8},{"x":255.8,"y":903.5},{"x":258.2,"y":917.7},{"x":269.3,"y":911.7},{"x":282,"y":923.6},{"x":297.6,"y":924.1},{"x":313.8,"y":930.3},{"x":353.7,"y":919.2},{"x":379.8,"y":929.7},{"x":444.4,"y":932.4},{"x":447.8,"y":953.1},{"x":425.4,"y":928},{"x":423.9,"y":911.8},{"x":436.1,"y":927.3},{"x":416.7,"y":926.2},{"x":436.9,"y":921.6},{"x":439.3,"y":938.9},{"x":409.2,"y":925.8},{"x":390.6,"y":921.5},{"x":358.7,"y":933.7},{"x":324.1,"y":936.7},{"x":307.5,"y":920.8},{"x":287.1,"y":912.7},{"x":278.4,"y":904.5},{"x":266,"y":908.3},{"x":256.9,"y":921.4},{"x":263.9,"y":931},{"x":310.2,"y":936.1},{"x":358.5,"y":928.4},{"x":396.3,"y":926},{"x":364.3,"y":911.4},{"x":343.9,"y":910},{"x":319.4,"y":917.8},{"x":291.2,"y":919.2},{"x":278,"y":909.6},{"x":264.3,"y":919.6},{"x":285.5,"y":936.3},{"x":269.7,"y":952.1},{"x":282.3,"y":971.9},{"x":301.5,"y":985.8},{"x":338.1,"y":990.9},{"x":368.9,"y":988.7},{"x":426.8,"y":944.3},{"x":356.4,"y":994.2},{"x":302.8,"y":980.9},{"x":282.8,"y":962.5},{"x":287.8,"y":956.5},{"x":283.8,"y":976.3},{"x":309.2,"y":990.3},{"x":271.3,"y":964.1},{"x":272.1,"y":935.7},{"x":294.8,"y":937.6},{"x":303.6,"y":942.2},{"x":305,"y":947.8},{"x":295.7,"y":931.3},{"x":268.3,"y":942.3},{"x":257.6,"y":936.4},{"x":240.8,"y":910.5},{"x":241.3,"y":885.5},{"x":246.5,"y":870.6},{"x":236.1,"y":857},{"x":224.3,"y":830.9},{"x":228.1,"y":811.5},{"x":239.1,"y":798.3},{"x":240.3,"y":782},{"x":230.8,"y":757.2},{"x":232.3,"y":716.9},{"x":240.9,"y":704.6},{"x":240.7,"y":673.7},{"x":180.9,"y":672.7},{"x":167.6,"y":686.4},{"x":174.6,"y":715.6},{"x":163.4,"y":747.3},{"x":151.1,"y":757.2},{"x":163.2,"y":811.5},{"x":190.8,"y":867.5},{"x":232.3,"y":957},{"x":256.8,"y":998.8},{"x":277.2,"y":1026.7},{"x":290.2,"y":1022.2},{"x":304.6,"y":1008.8},{"x":338.2,"y":1001.3},{"x":369.5,"y":1002.7},{"x":381.3,"y":1009.6},{"x":353.1,"y":985.3},{"x":281.6,"y":991.4},{"x":236.1,"y":950},{"x":228.3,"y":903.2},{"x":234.5,"y":889.3},{"x":239.7,"y":928},{"x":243.6,"y":968.4},{"x":267.3,"y":1005.8},{"x":283.9,"y":1052.8},{"x":313.2,"y":1092},{"x":347.2,"y":1107.5},{"x":378.2,"y":1109.1},{"x":441.1,"y":1102.3},{"x":470.7,"y":1090.4},{"x":528.8,"y":1042},{"x":583.2,"y":987.8},{"x":646.4,"y":918.8},{"x":679.6,"y":860.8},{"x":692.1,"y":813.5},{"x":701.2,"y":741.8},{"x":703.2,"y":712},{"x":693.2,"y":745.1},{"x":664.2,"y":785.9},{"x":627.1,"y":835.5},{"x":588,"y":906.4},{"x":524.6,"y":1013.1},{"x":583.7,"y":946.9},{"x":628,"y":895.2},{"x":651,"y":825.4},{"x":650.7,"y":781.6},{"x":633,"y":709.7},{"x":605.6,"y":780.2},{"x":538.6,"y":848.1},{"x":502.3,"y":857.7},{"x":461.7,"y":812.2},{"x":543.4,"y":749.4},{"x":594.1,"y":628},{"x":581.4,"y":591.9},{"x":579.4,"y":550.4},{"x":521.7,"y":465.9},{"x":582.7,"y":486.1},{"x":648.7,"y":478.6},{"x":691.4,"y":450.2},{"x":756.3,"y":364.4},{"x":713.7,"y":431.6},{"x":683,"y":448.1},{"x":613.3,"y":468.2},{"x":560.7,"y":462.5},{"x":535,"y":441.7},{"x":525.3,"y":427.2},{"x":588.7,"y":474},{"x":653.7,"y":462.9},{"x":694.2,"y":424.6},{"x":732.2,"y":365.1},{"x":765.7,"y":312.1},{"x":772.4,"y":275.8},{"x":759.9,"y":330.1},{"x":733.3,"y":374.9},{"x":698.4,"y":402.3},{"x":658.2,"y":427.7},{"x":594.7,"y":436.9},{"x":543.2,"y":410.1},{"x":565.3,"y":438},{"x":600.6,"y":451.1},{"x":654.3,"y":437},{"x":683.8,"y":397.4},{"x":776.4,"y":296.6},{"x":780.9,"y":279.3},{"x":770.4,"y":318.3},{"x":702.4,"y":390.2},{"x":685.7,"y":421.5},{"x":752,"y":355.6},{"x":782.3,"y":308.1},{"x":786.4,"y":289.7},{"x":775.8,"y":346.8},{"x":743.1,"y":398.1},{"x":714.9,"y":440},{"x":680.9,"y":470.2},{"x":610.2,"y":495.9},{"x":585.4,"y":498.9},{"x":617.5,"y":512.1},{"x":636.5,"y":539.8},{"x":691.4,"y":583.2},{"x":728.8,"y":574.1},{"x":752,"y":543.6},{"x":756.3,"y":506},{"x":769.4,"y":467.3},{"x":794.4,"y":501.9},{"x":803.3,"y":534.3},{"x":794.5,"y":581},{"x":793.5,"y":632},{"x":784,"y":651.7},{"x":775,"y":693.6},{"x":764,"y":710.5},{"x":727.3,"y":732},{"x":712.8,"y":721.1},{"x":710.3,"y":687.8},{"x":717.1,"y":668.4},{"x":736.3,"y":654.9},{"x":739.8,"y":633.3},{"x":730.1,"y":647.8},{"x":732.3,"y":667.1},{"x":746.3,"y":631.7},{"x":760.3,"y":620.2},{"x":768.9,"y":597.8},{"x":758.7,"y":569.4},{"x":739,"y":552.5},{"x":752.6,"y":571.9},{"x":755,"y":600.1},{"x":744.1,"y":575.8},{"x":756.4,"y":553.5},{"x":760.5,"y":590.2},{"x":732.4,"y":546.6},{"x":746.1,"y":517.7},{"x":771,"y":492.9},{"x":783.6,"y":514.4},{"x":788.7,"y":541.7},{"x":782.8,"y":559.6},{"x":783.3,"y":504},{"x":771.4,"y":507.6},{"x":768.3,"y":539.4},{"x":779.2,"y":567.3},{"x":783,"y":590},{"x":784.1,"y":611.8},{"x":773.3,"y":629.4},{"x":787.7,"y":583.2},{"x":762.5,"y":520.6},{"x":782.3,"y":466.6},{"x":804.3,"y":414.6},{"x":752,"y":464},{"x":706.7,"y":497.3},{"x":660.2,"y":509.9},{"x":629.2,"y":502.2},{"x":686,"y":545.1},{"x":707.4,"y":541},{"x":734.6,"y":516.4},{"x":748.4,"y":493.9},{"x":714.1,"y":545.6},{"x":683.2,"y":559.9},{"x":642.1,"y":554.3},{"x":622.6,"y":544.4},{"x":653.6,"y":578.6},{"x":684.7,"y":605.4},{"x":709.2,"y":600.6},{"x":735.2,"y":583.4},{"x":707.9,"y":609.3},{"x":664.6,"y":601.5},{"x":641.2,"y":576.7},{"x":678.3,"y":585.6},{"x":621.5,"y":534.3},{"x":667.1,"y":545.3},{"x":647,"y":530.9},{"x":611.8,"y":520.8},{"x":688.8,"y":513.7},{"x":741.2,"y":446.4},{"x":776.2,"y":392.6},{"x":787.9,"y":352.6},{"x":731.5,"y":440.8},{"x":692.4,"y":478.3},{"x":659.2,"y":489},{"x":761.7,"y":441},{"x":788.5,"y":406.9},{"x":801.4,"y":373.1},{"x":724.9,"y":390.6},{"x":654.7,"y":407.5},{"x":577.9,"y":405.7},{"x":674.2,"y":343.5},{"x":696.7,"y":297.5},{"x":709.1,"y":238.9},{"x":647.6,"y":282.1},{"x":686.4,"y":243.3},{"x":666.4,"y":248.5},{"x":705.9,"y":215.1},{"x":682.1,"y":221.4},{"x":703.7,"y":200.5},{"x":680.9,"y":202.7},{"x":699.1,"y":176.6},{"x":683.4,"y":178.3},{"x":687.7,"y":159.3},{"x":672.9,"y":157.3},{"x":670.1,"y":148.5},{"x":657.1,"y":145.6},{"x":653.9,"y":133.7},{"x":645.4,"y":140.9},{"x":624.9,"y":132.6},{"x":607.4,"y":134.6},{"x":632.9,"y":172.9},{"x":636.2,"y":208.5},{"x":608.4,"y":153.4},{"x":563.6,"y":132.7},{"x":478.1,"y":107.2},{"x":573.8,"y":130.8},{"x":592.8,"y":157.5},{"x":608.1,"y":211.2},{"x":588.4,"y":268.6},{"x":546.7,"y":306.5},{"x":591.1,"y":237},{"x":585.8,"y":181.7},{"x":557.6,"y":146.9},{"x":419.6,"y":111.9},{"x":544.8,"y":155.3},{"x":563.3,"y":191.1},{"x":567.6,"y":244.5},{"x":528.5,"y":288.7},{"x":549.6,"y":245.9},{"x":545,"y":192.1},{"x":513.5,"y":150.3},{"x":443.5,"y":128.5},{"x":503.8,"y":158},{"x":527.4,"y":200.5},{"x":516.6,"y":237.8},{"x":471.8,"y":282.6},{"x":421.4,"y":346.6},{"x":487.9,"y":275.5},{"x":498.1,"y":231.2},{"x":493.4,"y":204.9},{"x":485,"y":289.6},{"x":459.7,"y":313.6},{"x":472.9,"y":258},{"x":474.4,"y":219.3},{"x":462.6,"y":191.6},{"x":479.9,"y":263.9},{"x":443.1,"y":304.9},{"x":397.3,"y":321.3},{"x":450.3,"y":270.3},{"x":462,"y":235},{"x":445,"y":188.2},{"x":422,"y":164},{"x":457,"y":202},{"x":460.3,"y":267.7},{"x":426,"y":299.6},{"x":379.2,"y":331.3},{"x":335.5,"y":333.3},{"x":427.8,"y":268.2},{"x":441.2,"y":218.4},{"x":433.5,"y":200},{"x":438.7,"y":262},{"x":415.2,"y":285.4},{"x":313.2,"y":337.8},{"x":239.4,"y":358.3},{"x":326.4,"y":293},{"x":347.4,"y":253.3},{"x":353.4,"y":225.2},{"x":336.4,"y":157.6},{"x":275.5,"y":95.6},{"x":270.3,"y":78.1},{"x":297.1,"y":132.9},{"x":322.6,"y":170},{"x":354.6,"y":247.5},{"x":347.9,"y":288.7},{"x":329.6,"y":312.4},{"x":295.9,"y":328.9},{"x":366.9,"y":257.8},{"x":375.7,"y":223.3},{"x":372.4,"y":191.3},{"x":327.6,"y":133.4},{"x":358.4,"y":190.1},{"x":363.9,"y":214.4},{"x":324.4,"y":154.9},{"x":283.9,"y":141.3},{"x":268,"y":114.2},{"x":243.9,"y":101},{"x":236.6,"y":83},{"x":190.9,"y":125.8},{"x":140.4,"y":201.6},{"x":114.2,"y":280.3},{"x":113.2,"y":321.3},{"x":121.7,"y":350.7},{"x":123.9,"y":302.3},{"x":132.7,"y":266.1},{"x":163.6,"y":213.6},{"x":184.9,"y":180.6},{"x":205.1,"y":139.1},{"x":198.4,"y":169.1},{"x":171.5,"y":213.6},{"x":129.7,"y":259.3},{"x":130,"y":316.2},{"x":165.7,"y":239.9},{"x":205,"y":181.9},{"x":225.8,"y":130.9},{"x":225.3,"y":165.1},{"x":213.6,"y":209.3},{"x":186.8,"y":249.1},{"x":164.2,"y":288.5},{"x":144.9,"y":338},{"x":224.3,"y":232.4},{"x":245.8,"y":186.6},{"x":246.1,"y":150.2},{"x":241.1,"y":225.5},{"x":207.9,"y":291.2},{"x":167.1,"y":334.9},{"x":256.1,"y":216.3},{"x":263.1,"y":180.2},{"x":259.5,"y":138.2},{"x":269.6,"y":205.3},{"x":255.3,"y":256.8},{"x":224.3,"y":300.2},{"x":178.1,"y":341.9},{"x":165.6,"y":355.8},{"x":157.4,"y":375.5},{"x":172.7,"y":311.4},{"x":145.2,"y":357.7},{"x":144.2,"y":313.1},{"x":126,"y":368.4},{"x":137.5,"y":376.4},{"x":203,"y":304},{"x":276.2,"y":224.6},{"x":279,"y":168.1},{"x":271.8,"y":133.5},{"x":284.4,"y":211.2},{"x":278.6,"y":263.9},{"x":256.3,"y":297.2},{"x":216.5,"y":332.3},{"x":186.7,"y":349.3},{"x":170.2,"y":383.5},{"x":162,"y":421.2},{"x":147.2,"y":386.4},{"x":118.5,"y":378.1},{"x":100.7,"y":350.8},{"x":95.8,"y":298.6},{"x":113.8,"y":219.9},{"x":166.4,"y":137.3},{"x":191.8,"y":106.1},{"x":128.8,"y":181.1},{"x":112.1,"y":258.4},{"x":126.1,"y":165.6},{"x":157.6,"y":116},{"x":116.3,"y":172.7},{"x":101.6,"y":217},{"x":121.1,"y":147},{"x":89.6,"y":213.3},{"x":129.8,"y":136.8},{"x":90.1,"y":175.4},{"x":72.9,"y":218.5},{"x":100,"y":152.7},{"x":136.2,"y":113.2},{"x":182.7,"y":93.5},{"x":253.2,"y":84.9},{"x":297.2,"y":93.6},{"x":341.5,"y":129.6},{"x":373.1,"y":168},{"x":384.6,"y":190.7},{"x":367.4,"y":148.5},{"x":386.7,"y":215.5},{"x":380.9,"y":246.7},{"x":363.7,"y":282.4},{"x":402.2,"y":259.1},{"x":420,"y":205.4},{"x":407.5,"y":170.5},{"x":377,"y":140.2},{"x":342.8,"y":118.4},{"x":385.2,"y":123.1},{"x":454.2,"y":154.4},{"x":477.2,"y":188.8},{"x":484.7,"y":214.5},{"x":446.2,"y":286.9},{"x":404.9,"y":332.5},{"x":390.2,"y":364.5},{"x":424.7,"y":318.7},{"x":507.2,"y":229.4},{"x":500.9,"y":193.4},{"x":486.7,"y":164.2},{"x":435.5,"y":132.6},{"x":507.2,"y":190.5},{"x":513,"y":220.2},{"x":507,"y":259.7},{"x":496,"y":291.9},{"x":473.5,"y":328.3},{"x":495.8,"y":307.7},{"x":518,"y":279.4},{"x":528,"y":245.4},{"x":530.6,"y":208.8},{"x":513.6,"y":302.6},{"x":500.4,"y":321.5},{"x":539.3,"y":289.9},{"x":555.1,"y":224.6},{"x":536.4,"y":312.4},{"x":518.7,"y":324.1},{"x":569.1,"y":254.1},{"x":576.9,"y":219.8},{"x":552.4,"y":312.5},{"x":542.9,"y":332.5},{"x":594.7,"y":273.2},{"x":612.7,"y":201.6},{"x":603.2,"y":167.6},{"x":619,"y":226.1},{"x":618.6,"y":253},{"x":626.4,"y":212.4},{"x":642.2,"y":196.7},{"x":629.9,"y":230.4},{"x":641.4,"y":222.1},{"x":629.6,"y":243.8},{"x":642.1,"y":236.6},{"x":609.6,"y":281},{"x":632.6,"y":261},{"x":594.1,"y":301.4},{"x":628.3,"y":275.4},{"x":579.1,"y":321.4},{"x":614.3,"y":301.6},{"x":557.9,"y":350.5},{"x":629.7,"y":303.5},{"x":576.9,"y":362.2},{"x":679.1,"y":274.9},{"x":583.1,"y":372.6},{"x":684.2,"y":284.7},{"x":652,"y":334.3},{"x":598.7,"y":371.1},{"x":665.5,"y":322.6},{"x":710,"y":291.3},{"x":740.3,"y":257},{"x":690.5,"y":331.7},{"x":601.7,"y":379.1},{"x":719.3,"y":311.3},{"x":743.6,"y":272.7},{"x":696.4,"y":338.9},{"x":638.2,"y":379.3},{"x":626.9,"y":393},{"x":713.9,"y":336.4},{"x":740.5,"y":293.2},{"x":684.7,"y":368.8},{"x":658.5,"y":392.9},{"x":646.7,"y":394.7},{"x":705.7,"y":354.4},{"x":736.9,"y":326.1},{"x":765,"y":250},{"x":757.2,"y":252.5},{"x":751.5,"y":225.4},{"x":719.6,"y":183.9},{"x":666.1,"y":141.3},{"x":584.4,"y":122.6},{"x":524,"y":88.8},{"x":454.6,"y":74},{"x":355.4,"y":69.7},{"x":318.6,"y":82.4},{"x":256.6,"y":93.4},{"x":304,"y":168.3},{"x":310.5,"y":206.8},{"x":299,"y":245.3},{"x":251.4,"y":283},{"x":293.2,"y":231.9},{"x":296.5,"y":186.7},{"x":286.3,"y":160.7},{"x":318,"y":219.7},{"x":307.5,"y":254},{"x":317.8,"y":196.1},{"x":322.8,"y":211.6},{"x":284.8,"y":284.6},{"x":251.6,"y":316.4},{"x":312.6,"y":262.5},{"x":332.6,"y":225.4},{"x":335.6,"y":191.2},{"x":330.4,"y":252.5},{"x":299.7,"y":288.3},{"x":230.3,"y":334.1},{"x":316,"y":282.8},{"x":244.5,"y":334.9},{"x":193,"y":377.6},{"x":171.3,"y":412.1},{"x":167.2,"y":443.6},{"x":176.2,"y":487.8},{"x":141.6,"y":498.9},{"x":145.9,"y":563.9},{"x":174.7,"y":594.3},{"x":152.7,"y":597},{"x":132.5,"y":587.1},{"x":167,"y":547.5},{"x":171.8,"y":520},{"x":174.2,"y":579.1},{"x":196.5,"y":601.1},{"x":210.5,"y":628.6},{"x":238.2,"y":643},{"x":256.9,"y":684.7},{"x":241.9,"y":631.4},{"x":254.9,"y":618.8},{"x":257.2,"y":596.2},{"x":241.5,"y":552.1},{"x":253,"y":511.1},{"x":312.7,"y":493.3},{"x":243.4,"y":508.7},{"x":231.1,"y":498.4},{"x":220.2,"y":479.5},{"x":198,"y":466.3},{"x":185.8,"y":462.3},{"x":225.5,"y":471.8},{"x":195.2,"y":428},{"x":193,"y":400.4},{"x":215.1,"y":375.9},{"x":249.6,"y":369.2},{"x":314.9,"y":346},{"x":359.4,"y":342.9},{"x":477.1,"y":303.9},{"x":532.8,"y":254.1},{"x":556.3,"y":328.6},{"x":608.8,"y":258.7},{"x":560.1,"y":337.2},{"x":639.9,"y":296.9},{"x":569.9,"y":356.3},{"x":646.4,"y":326},{"x":588.1,"y":386},{"x":640.7,"y":402.2},{"x":639.5,"y":421.8},{"x":583.4,"y":420.9},{"x":573.7,"y":498.8},{"x":631.4,"y":571.7},{"x":645.4,"y":614.1},{"x":686.2,"y":628.8},{"x":698.9,"y":680.8},{"x":689.1,"y":733.5},{"x":708.9,"y":734.3},{"x":705.3,"y":753.2},{"x":695,"y":822.6},{"x":670.3,"y":894.9},{"x":613.1,"y":965.7},{"x":540,"y":1040.3},{"x":485.8,"y":1085.8},{"x":400.4,"y":1101.2},{"x":366,"y":1092.3},{"x":330.2,"y":1097.2},{"x":322.4,"y":1107.9},{"x":349.6,"y":1101.4},{"x":319.3,"y":1086.1},{"x":326,"y":1072.1},{"x":364.8,"y":1100.4},{"x":381.9,"y":1102.9},{"x":360.9,"y":1105.9},{"x":318.4,"y":1063.8},{"x":317,"y":1033.8},{"x":303.8,"y":1058.2},{"x":252,"y":1014.2},{"x":226.2,"y":1069.1},{"x":195.4,"y":1123.8},{"x":259.4,"y":1128.8},{"x":296.9,"y":1123.2},{"x":239.9,"y":1101.7},{"x":230.4,"y":1031.1},{"x":228.2,"y":974.8},{"x":175.2,"y":969.8},{"x":145.7,"y":975},{"x":193.4,"y":1005.7},{"x":191.9,"y":1083.4},{"x":198.6,"y":1034.4},{"x":177.2,"y":987.9},{"x":127.7,"y":980.9},{"x":25.7,"y":1044.6},{"x":96.9,"y":1007.5},{"x":185.7,"y":966.5},{"x":224,"y":966.9},{"x":247.2,"y":936.6},{"x":229.5,"y":869.7},{"x":220,"y":822},{"x":232.9,"y":795.2},{"x":223.4,"y":743.6},{"x":233.8,"y":686.8},{"x":217.4,"y":680.8},{"x":168.8,"y":679.3},{"x":160.4,"y":683},{"x":166.5,"y":707.5},{"x":166.3,"y":728.1},{"x":158.7,"y":743.4},{"x":171.9,"y":693.3},{"x":164.1,"y":674.7},{"x":179.4,"y":685.5},{"x":230.8,"y":671.8},{"x":224.1,"y":687.2},{"x":193.5,"y":687.2},{"x":197.2,"y":700.1},{"x":212.5,"y":702.5},{"x":205.3,"y":715.5},{"x":200.8,"y":765.9},{"x":205.7,"y":845.9},{"x":224.8,"y":897.5},{"x":278,"y":1017},{"x":260.4,"y":949.7},{"x":225.3,"y":925.2},{"x":217,"y":888.9},{"x":218.3,"y":855.8},{"x":212.7,"y":812.1},{"x":224.9,"y":781.3},{"x":218.4,"y":731.7},{"x":228.1,"y":697.8},{"x":208.1,"y":691.8},{"x":189.6,"y":697.3},{"x":195.4,"y":714.6},{"x":181.6,"y":772},{"x":195.9,"y":816.7},{"x":215.8,"y":755.3},{"x":183.3,"y":715.9},{"x":170.7,"y":736},{"x":168.9,"y":776.4},{"x":205.4,"y":882.5},{"x":175.1,"y":824.3},{"x":143.5,"y":729.4},{"x":139.8,"y":683.5},{"x":128.4,"y":651.4},{"x":96,"y":621.4},{"x":102.7,"y":574.7},{"x":103.8,"y":516.6},{"x":102.5,"y":463.7},{"x":107.9,"y":394.1},{"x":74.3,"y":373.3},{"x":88.7,"y":376.5},{"x":112.5,"y":406.5},{"x":95.9,"y":473},{"x":97.3,"y":529.8},{"x":87.1,"y":507.7},{"x":73.9,"y":446.1},{"x":77.2,"y":405.2},{"x":61,"y":378},{"x":46.2,"y":325.5},{"x":50.1,"y":260.7},{"x":72.4,"y":196.4},{"x":71.6,"y":242.3},{"x":93.1,"y":189.9},{"x":67.4,"y":265.6},{"x":89.9,"y":230.7},{"x":74.9,"y":307.4},{"x":85.9,"y":357.4},{"x":104.3,"y":377.8},{"x":89.6,"y":342.4},{"x":86.1,"y":315.6},{"x":88.9,"y":281.2},{"x":95.7,"y":247.6},{"x":67.5,"y":280.5},{"x":59.5,"y":312.9}];
@@ -128,20 +107,39 @@
       if(booted) return; booted=true;
       const $=id=>document.getElementById(id);
       const svg=$("art"), full=$("full"), inkDone=$("inkDone"), inkPartial=$("inkPartial");
-      const gDots=$("dots"), gNums=$("nums"), ring=$("ring"), targetNum=$("targetNum");
-      const stage=$("stage"), bar=$("bar"), count=$("count"), hint=$("hint");
-      const showme=$("showme"), doneBadge=$("done"), resume=$("resume");
+      const gDots=$("dots"), nib=$("nib"), bar=$("bar"), count=$("count"), doneBadge=$("done");
       const NS="http://www.w3.org/2000/svg";
 
       const PTS=art.dots, N=PTS.length;
       full.setAttribute("d",art.d);
       const t=$("title"); t.textContent=art.title+" ";
-      const sp=document.createElement("span"); sp.textContent="· tap to connect"; t.appendChild(sp);
+      const sp=document.createElement("span"); sp.textContent="· watch it draw"; t.appendChild(sp);
       document.title=art.title+" · 1000 Dot-to-Dot";
       $("scrollLink").href="index.html?art="+art.id;
-      $("watchLink").href="watch.html?art="+art.id;
+      $("playLink").href="play.html?art="+art.id;
       $("credit").textContent=art.credit||"";
-      doneBadge.textContent="✓ Complete — you connected all "+N+" dots";
+      doneBadge.textContent="✓ Complete — all "+N+" dots connected";
+
+      // Fit the viewBox to the artwork.
+      function fit(){
+        const b=full.getBBox(), pd=Math.max(b.width,b.height)*0.04;
+        svg.setAttribute("viewBox",[b.x-pd,b.y-pd,b.width+2*pd,b.height+2*pd].join(" "));
+      }
+      fit();
+      window.addEventListener("resize",fit);
+      const bb=full.getBBox();
+      const R=Math.max(bb.width,bb.height)*0.0026;
+      nib.setAttribute("r",R*1.9);
+
+      // Build dots.
+      const dotEls=[];
+      const f1=document.createDocumentFragment();
+      PTS.forEach(p=>{
+        const c=document.createElementNS(NS,"circle");
+        c.setAttribute("cx",p.x); c.setAttribute("cy",p.y); c.setAttribute("r",R);
+        c.setAttribute("class","dot"); f1.appendChild(c); dotEls.push(c);
+      });
+      gDots.appendChild(f1);
 
       // ---- Geometry core (identical approach to index.html: no dash math) ----
       const cmds=art.d.match(/[MLCZ][^MLCZ]*/g);
@@ -149,250 +147,91 @@
       let acc="", lenAt=[];
       for(let k=0;k<cmds.length;k++){ acc+=cmds[k]; tmp.setAttribute("d",acc); lenAt.push(tmp.getTotalLength()); }
       svg.removeChild(tmp);
+      const LEN=lenAt[lenAt.length-1];
+
+      function dotsReached(d){ let lo=0,hi=lenAt.length;
+        while(lo<hi){const m=(lo+hi)>>1; if(lenAt[m]<=d) lo=m+1; else hi=m;} return lo; }
 
       let doneStr="", doneCount=0;
-      function setDone(reachedN){
-        if(reachedN===doneCount) return;
-        if(reachedN>doneCount){ for(let k=doneCount;k<reachedN;k++) doneStr+=cmds[k]; }
-        else { doneStr = reachedN>0 ? cmds.slice(0,reachedN).join("") : ""; }
-        doneCount=reachedN;
+      function setDone(reached){
+        if(reached===doneCount) return;
+        if(reached>doneCount){ for(let k=doneCount;k<reached;k++) doneStr+=cmds[k]; }
+        else { doneStr = reached>0 ? cmds.slice(0,reached).join("") : ""; }
+        doneCount=reached;
         inkDone.setAttribute("d",doneStr);
       }
 
-      // ---- Dots + numbers ----
-      const bb=full.getBBox();
-      const pad=Math.max(bb.width,bb.height)*0.04;
-      const base={x:bb.x-pad,y:bb.y-pad,w:bb.width+2*pad,h:bb.height+2*pad};
-      const R0=Math.max(bb.width,bb.height)*0.0026;
-      const dotEls=[];
-      const f1=document.createDocumentFragment(), f2=document.createDocumentFragment();
-      PTS.forEach((p,i)=>{
-        const c=document.createElementNS(NS,"circle");
-        c.setAttribute("cx",p.x); c.setAttribute("cy",p.y); c.setAttribute("r",R0);
-        c.setAttribute("class","dot"); f1.appendChild(c); dotEls.push(c);
-        const t=document.createElementNS(NS,"text");
-        t.setAttribute("x",p.x+R0*1.6); t.setAttribute("y",p.y-R0*1.2);
-        t.setAttribute("class","num"); t.textContent=i+1; f2.appendChild(t);
-      });
-      gDots.appendChild(f1); gNums.appendChild(f2);
+      // ---- Time-driven reveal: the pen moves at constant speed along the path ----
+      const DURATION=75;              // seconds for the full drawing at 1×
+      const SPEEDS=[0.5,1,2,4];
+      let drawn=0, playing=true, speed=1, prev=-1, last=null, raf=null;
 
-      // ---- ViewBox pan/zoom ----
-      const MAXZOOM=14;          // max magnification over the fitted view
-      const NUMS_AT=4;           // show numbers past this magnification
-      let vb={x:base.x,y:base.y,w:base.w,h:base.h};
-      function applyVB(){
-        svg.setAttribute("viewBox",vb.x+" "+vb.y+" "+vb.w+" "+vb.h);
-        onViewChanged();
-      }
-      function pxScale(){ const m=svg.getScreenCTM(); return m?m.a:1; } // screen px per user unit
-      function clampVB(){
-        vb.w=Math.min(base.w,Math.max(base.w/MAXZOOM,vb.w));
-        vb.h=vb.w*(base.h/base.w);
-        vb.x=Math.min(base.x+base.w-vb.w*0.15,Math.max(base.x-vb.w*0.85,vb.x));
-        vb.y=Math.min(base.y+base.h-vb.h*0.15,Math.max(base.y-vb.h*0.85,vb.y));
-      }
-      function zoomAbout(cx,cy,factor){
-        const m=svg.getScreenCTM(); if(!m) return;
-        const u=new DOMPoint(cx,cy).matrixTransform(m.inverse());
-        const nw=Math.min(base.w,Math.max(base.w/MAXZOOM,vb.w/factor));
-        const k=nw/vb.w;
-        vb.x=u.x-(u.x-vb.x)*k; vb.y=u.y-(u.y-vb.y)*k; vb.w=nw; vb.h*=k;
-        clampVB(); applyVB();
-      }
-      function onViewChanged(){
-        const s=pxScale();
-        const zoom=vb.w>0?base.w/vb.w:1;
-        // Dots keep a finger-friendly, roughly constant on-screen size once zoomed.
-        const rU=(R0*s>6)?6/s:R0;
-        svg.style.setProperty("--dotr",rU+"px");
-        ring.setAttribute("r",rU*2.5);
-        gNums.style.fontSize=(11/s)+"px";
-        document.body.classList.toggle("zoomnums",zoom>=NUMS_AT);
-        positionTarget();
-      }
-
-      // ---- Game state ----
-      const KEY="dtd-play:"+art.id;
-      let reached=0;
-      function save(){ try{localStorage.setItem(KEY,JSON.stringify({reached:reached,ts:Date.now()}));}catch(e){} }
-      function clearSave(){ try{localStorage.removeItem(KEY);}catch(e){} }
-
-      function positionTarget(){
-        if(reached>=N){ targetNum.hidden=true; ring.style.display="none"; return; }
-        ring.style.display="";
-        const p=PTS[reached];
-        ring.setAttribute("cx",p.x); ring.setAttribute("cy",p.y);
-        const m=svg.getScreenCTM(); if(!m) return;
-        const sp=new DOMPoint(p.x,p.y).matrixTransform(m);
-        const on=sp.x>-40&&sp.x<window.innerWidth+40&&sp.y>-40&&sp.y<window.innerHeight+40;
-        targetNum.hidden=!on;
-        if(on){ targetNum.style.left=sp.x+"px"; targetNum.style.top=(sp.y-10)+"px"; targetNum.textContent=reached+1; }
-      }
-      function updateHUD(){
-        bar.style.width=(reached/N*100)+"%";
-        hint.style.opacity=reached>0?0:1;
-        if(reached>=N){
-          count.textContent="Dot "+N+" / "+N;
-          doneBadge.style.opacity=1;
-          showme.classList.remove("show");
-        } else {
-          count.textContent="Find dot "+(reached+1)+" · "+reached+" / "+N;
-          doneBadge.style.opacity=0;
-        }
-        const bc=document.getElementById("bookCard");
-        if(bc.dataset.ready) bc.classList.toggle("show",reached>=N);
-        positionTarget();
-      }
-      function setReached(r){   // bulk jump (resume / reset)
-        finishAnim();
-        reached=r; setDone(r);
-        inkPartial.setAttribute("d","");
-        dotEls.forEach((el,i)=>el.setAttribute("class", i<r?"dot done":"dot"));
-        updateHUD(); resetIdle();
-      }
-
-      // ---- Segment draw animation (sweeps the real path via getPointAtLength) ----
-      let animRaf=null, animCommit=null;
-      function finishAnim(){
-        if(animRaf){ cancelAnimationFrame(animRaf); animRaf=null; }
-        if(animCommit){ const c=animCommit; animCommit=null; c(); }
-      }
-      function animateSegment(r){
-        const a=PTS[r-2], from=lenAt[r-2], to=lenAt[r-1], t0=performance.now(), dur=150;
-        animCommit=function(){ setDone(r); inkPartial.setAttribute("d",""); };
-        function step(now){
-          const t=Math.min(1,(now-t0)/dur);
-          const p=full.getPointAtLength(from+(to-from)*t);
+      function update(){
+        const reached=dotsReached(drawn);
+        setDone(reached);
+        if(reached>0 && reached<cmds.length && drawn>lenAt[reached-1]){
+          const a=PTS[reached-1], p=full.getPointAtLength(drawn);
           inkPartial.setAttribute("d","M"+a.x+" "+a.y+"L"+p.x+" "+p.y);
-          if(t<1){ animRaf=requestAnimationFrame(step); }
-          else { animRaf=null; const c=animCommit; animCommit=null; c(); }
-        }
-        animRaf=requestAnimationFrame(step);
-      }
-
-      // ---- Tapping ----
-      const HIT_PX=28;   // forgiving finger-sized radius, in screen px, at any zoom
-      function tap(cx,cy){
-        if(reached>=N) return;
-        const m=svg.getScreenCTM(); if(!m) return;
-        const u=new DOMPoint(cx,cy).matrixTransform(m.inverse());
-        const t=PTS[reached], hit=HIT_PX/pxScale();
-        const dx=u.x-t.x, dy=u.y-t.y;
-        if(dx*dx+dy*dy<=hit*hit){
-          finishAnim();
-          const r=reached+1;
-          if(r>=2) animateSegment(r); else setDone(1);
-          dotEls[r-1].setAttribute("class","dot done");
-          reached=r; save(); updateHUD();
         } else {
-          ring.classList.add("miss");
-          setTimeout(()=>ring.classList.remove("miss"),350);
+          inkPartial.setAttribute("d","");
         }
+        const tip=full.getPointAtLength(drawn);
+        nib.setAttribute("cx",tip.x); nib.setAttribute("cy",tip.y);
+        if(reached!==prev){
+          const lo=Math.min(reached,Math.max(prev,0)), hi=Math.max(reached,prev);
+          for(let k=lo;k<hi && k<dotEls.length;k++)
+            dotEls[k].setAttribute("class", k<reached ? "dot done" : "dot");
+          prev=reached;
+          count.textContent="Dot "+reached+" / "+N;
+        }
+        bar.style.width=(drawn/LEN*100)+"%";
+        const finished=reached>=N;
+        doneBadge.style.opacity=finished?1:0;
+        nib.style.opacity=finished?0:1;
+        const bc=document.getElementById("bookCard");
+        if(bc.dataset.ready) bc.classList.toggle("show",finished);
+        if(finished&&playing){ playing=false; setPlayLabel(); }
       }
 
-      // ---- Pointer handling: 1 finger = pan or tap, 2 fingers = pinch ----
-      const pointers=new Map();
-      let moved=false, wasPinch=false, pinchD=0;
-      stage.addEventListener("pointerdown",e=>{
-        e.preventDefault();
-        try{ stage.setPointerCapture(e.pointerId); }catch(err){}
-        pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-        if(pointers.size===1){ moved=false; wasPinch=false; }
-        else if(pointers.size===2){
-          wasPinch=true;
-          const p=[...pointers.values()];
-          pinchD=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
+      function frame(ts){
+        raf=null;
+        if(last!=null&&playing){
+          const dt=Math.min(0.1,(ts-last)/1000);   // clamp: no jump after a background tab
+          drawn=Math.min(LEN,drawn+dt*speed*LEN/DURATION);
+          update();
         }
-        resetIdle();
-      });
-      stage.addEventListener("pointermove",e=>{
-        const prev=pointers.get(e.pointerId);
-        if(!prev) return;
-        const cur={x:e.clientX,y:e.clientY};
-        if(pointers.size===1){
-          const dx=cur.x-prev.x, dy=cur.y-prev.y;
-          // accumulated movement decides tap vs drag
-          prev.tot=(prev.tot||0)+Math.abs(dx)+Math.abs(dy);
-          if(prev.tot>8) moved=true;
-          if(moved){
-            const s=pxScale();
-            vb.x-=dx/s; vb.y-=dy/s;
-            clampVB(); applyVB();
-          }
-          prev.x=cur.x; prev.y=cur.y;
-        } else if(pointers.size===2){
-          prev.x=cur.x; prev.y=cur.y;
-          const p=[...pointers.values()];
-          const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
-          const mid={x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};
-          if(pinchD>0&&d>0) zoomAbout(mid.x,mid.y,d/pinchD);
-          pinchD=d;
-        }
-      });
-      function endPointer(e){
-        const had=pointers.has(e.pointerId);
-        pointers.delete(e.pointerId);
-        if(had&&e.type==="pointerup"&&!moved&&!wasPinch&&pointers.size===0) tap(e.clientX,e.clientY);
-        if(pointers.size<2) pinchD=0;
-        if(pointers.size===0){ moved=false; wasPinch=false; }
+        last=ts;
+        if(playing&&drawn<LEN) raf=requestAnimationFrame(frame);
+        else last=null;
       }
-      stage.addEventListener("pointerup",endPointer);
-      stage.addEventListener("pointercancel",endPointer);
-      stage.addEventListener("wheel",e=>{
-        e.preventDefault();
-        zoomAbout(e.clientX,e.clientY,Math.exp(-e.deltaY*0.0015));
-        resetIdle();
-      },{passive:false});
-      window.addEventListener("resize",()=>{ clampVB(); applyVB(); });
+      function run(){ if(!raf){ last=null; raf=requestAnimationFrame(frame); } }
 
-      // ---- Idle "Show me" hint: fly the view to the target dot ----
-      let idleTimer=null, flyRaf=null;
-      function resetIdle(){
-        showme.classList.remove("show");
-        clearTimeout(idleTimer);
-        if(reached<N) idleTimer=setTimeout(()=>showme.classList.add("show"),6000);
+      const playBtn=$("playBtn");
+      function setPlayLabel(){ playBtn.textContent = playing ? "Pause" : (drawn>=LEN ? "Replay" : "Play"); }
+      function toggle(){
+        if(!playing&&drawn>=LEN){ restart(); return; }   // Replay
+        playing=!playing; setPlayLabel();
+        if(playing) run();
       }
-      function flyToTarget(){
-        if(reached>=N) return;
-        if(flyRaf) cancelAnimationFrame(flyRaf);
-        const t=PTS[reached];
-        const ratio=base.h/base.w;
-        const w=Math.max(base.w/6,base.w/MAXZOOM);
-        const end={x:t.x-w/2,y:t.y-(w*ratio)/2,w:w,h:w*ratio};
-        // clamp the destination the same way live panning is clamped
-        const saveVb={...vb}; vb=end; clampVB(); const dst={...vb}; vb=saveVb;
-        const start={...vb}, t0=performance.now(), dur=450;
-        function step(now){
-          const k=Math.min(1,(now-t0)/dur), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
-          vb={x:start.x+(dst.x-start.x)*e,y:start.y+(dst.y-start.y)*e,
-              w:start.w+(dst.w-start.w)*e,h:start.h+(dst.h-start.h)*e};
-          applyVB();
-          if(k<1) flyRaf=requestAnimationFrame(step); else flyRaf=null;
-        }
-        flyRaf=requestAnimationFrame(step);
+      function restart(){
+        drawn=0; playing=true; setPlayLabel();
+        update(); run();
       }
-      showme.addEventListener("click",()=>{ flyToTarget(); resetIdle(); });
-      $("fitBtn").addEventListener("click",()=>{ vb={x:base.x,y:base.y,w:base.w,h:base.h}; applyVB(); resetIdle(); });
-      $("resetBtn").addEventListener("click",()=>{
-        if(reached===0||window.confirm("Start over? Your progress on this drawing will be erased.")){
-          clearSave(); setReached(0);
-        }
+      playBtn.addEventListener("click",toggle);
+      $("restartBtn").addEventListener("click",restart);
+      $("speedBtn").addEventListener("click",e=>{
+        speed=SPEEDS[(SPEEDS.indexOf(speed)+1)%SPEEDS.length];
+        e.target.textContent=speed+"×";
+      });
+      $("stage").addEventListener("click",toggle);
+      document.addEventListener("keydown",e=>{
+        if(e.code==="Space"){ e.preventDefault(); toggle(); }
       });
 
-      // ---- Boot: fresh start or resume ----
-      let saved=0;
-      try{ const s=JSON.parse(localStorage.getItem(KEY)||"null"); if(s&&s.reached>0) saved=Math.min(s.reached,N); }catch(e){}
-      applyVB();
-      setReached(0);
-      if(saved>0){
-        $("resumeMsg").textContent=saved>=N?"You already finished this one!":"Continue at dot "+(saved+1)+"?";
-        resume.classList.add("show");
-        $("resumeYes").addEventListener("click",()=>{ resume.classList.remove("show"); setReached(saved); });
-        $("resumeNo").addEventListener("click",()=>{ resume.classList.remove("show"); clearSave(); setReached(0); });
-      }
+      update(); run();
     }
 
-    // ?art=<id> loader — identical mechanism to index.html.
+    // ?art=<id> loader. Anything invalid or missing falls back to the embedded default.
     (function(){
       const artId=(new URLSearchParams(location.search).get("art")||"").toLowerCase();
       if(!artId||artId==="elvis"){ boot(EMBEDDED); return; }

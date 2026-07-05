@@ -80,7 +80,7 @@
     </div>
   </div>
 
-  <div id="btns"><button id="galBtn" style="display:none">Drawings</button><a id="playLink" href="play.html">Play mode</a><button id="toggleNums">Show numbers</button></div>
+  <div id="btns"><button id="galBtn" style="display:none">Drawings</button><a id="playLink" href="play.html">Play mode</a><a id="watchLink" href="watch.html">Watch</a><button id="toggleNums">Show numbers</button></div>
   <div id="gallery"></div>
   <div id="bookCard"></div>
   <div id="hint">Scroll to connect the dots and complete the drawing</div>
@@ -127,6 +127,7 @@
     const sp=document.createElement("span"); sp.textContent="· scroll to draw"; t.appendChild(sp);
     document.title=art.title+" · 1000 Dot-to-Dot";
     document.getElementById("playLink").href="play.html?art="+art.id;
+    document.getElementById("watchLink").href="watch.html?art="+art.id;
     document.getElementById("credit").textContent=art.credit||"";
     done.textContent="✓ Complete — all "+N+" dots connected";
 
