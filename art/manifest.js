@@ -19,5 +19,26 @@ window.ART_MANIFEST = [
     book: "The 1000 Dot-to-Dot Book: Cityscapes",
     cover: "covers/cityscapes.jpg",
     buy: ""
+  },
+  {
+    id: "david",
+    title: "David",
+    book: "The 1000 Dot-to-Dot Book: Masterpieces",
+    cover: "covers/masterpieces.jpg",
+    buy: ""
+  },
+  {
+    id: "dr-strange",
+    title: "Doctor Strange",
+    book: "The 1000 Dot-to-Dot Book: Marvel",
+    cover: "covers/marvel.jpg",
+    buy: ""
+  },
+  {
+    id: "tree-frog",
+    title: "Tree Frog",
+    book: "The 1000 Dot-to-Dot Book: Animals",
+    cover: "covers/Animals.jpg",
+    buy: ""
   }
 ];
