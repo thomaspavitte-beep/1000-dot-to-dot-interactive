@@ -118,7 +118,7 @@
     const bb=full.getBBox();
     const pad=Math.max(bb.width,bb.height)*0.04;
     svg.setAttribute("viewBox",[bb.x-pad,bb.y-pad,bb.width+2*pad,bb.height+2*pad].join(" "));
-    const R=Math.max(bb.width,bb.height)*0.0026;
+    const R=Math.max(bb.width,bb.height)*0.0013;
 
     // Per-artwork metadata in the HUD / done badge.
     const PTS=art.dots, N=PTS.length;

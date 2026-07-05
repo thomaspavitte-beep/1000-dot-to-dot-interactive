@@ -100,7 +100,7 @@ All live near the top of the `<style>` and `<script>` blocks in `index.html`:
 | Easing smoothness | the `0.16` factor in `render()` (`current += (target-current)*0.16`) | Higher = snappier, lower = floatier. |
 | Colors | `--ink`, `--dot`, `--dotDone`, `--accent`, `--bg`, `--muted` CSS vars | |
 | Line weight | `stroke-width: 2` on `.ink` (CSS) | Uses `vector-effect: non-scaling-stroke`, so it's in screen pixels. |
-| Dot size | `R = Math.max(bb.width,bb.height)*0.0026` (JS) | |
+| Dot size | `R = Math.max(bb.width,bb.height)*0.0013` (JS) | Same factor in all three modes (`R`/`R0`). Kept small so the image isn't easy to read before the line is drawn. In watch.html the pen nib is `R*3.8` to stay its own size independent of the dots. |
 | Numbers toggle | the `#toggleNums` button / `body.shownums .num` CSS | Numbers are hidden by default (1,000 is dense); button reveals them. |
 
 Play-mode tunables (all near the top of `boot()` in `play.html`):

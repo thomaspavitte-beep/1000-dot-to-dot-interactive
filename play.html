@@ -163,7 +163,7 @@
       const bb=full.getBBox();
       const pad=Math.max(bb.width,bb.height)*0.04;
       const base={x:bb.x-pad,y:bb.y-pad,w:bb.width+2*pad,h:bb.height+2*pad};
-      const R0=Math.max(bb.width,bb.height)*0.0026;
+      const R0=Math.max(bb.width,bb.height)*0.0013;
       const dotEls=[];
       const f1=document.createDocumentFragment(), f2=document.createDocumentFragment();
       PTS.forEach((p,i)=>{

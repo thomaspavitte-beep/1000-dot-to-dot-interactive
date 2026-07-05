@@ -128,8 +128,8 @@
       fit();
       window.addEventListener("resize",fit);
       const bb=full.getBBox();
-      const R=Math.max(bb.width,bb.height)*0.0026;
-      nib.setAttribute("r",R*1.9);
+      const R=Math.max(bb.width,bb.height)*0.0013;
+      nib.setAttribute("r",R*3.8);   // pen nib kept at its original size (not a dot)
 
       // Build dots.
       const dotEls=[];
