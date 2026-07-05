@@ -28,8 +28,8 @@ window.ART_MANIFEST = [
     buy: ""
   },
   {
-    id: "dr-strange",
-    title: "Doctor Strange",
+    id: "captain-america",
+    title: "Captain America",
     book: "The 1000 Dot-to-Dot Book: Marvel",
     cover: "covers/marvel.jpg",
     buy: ""
