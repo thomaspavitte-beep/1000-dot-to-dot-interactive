@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>1000 Dot-to-Dot &middot; Scroll to Draw</title>
 <style>
-  :root{ --ink:#111418; --dot:#c7ccd2; --dotDone:#111418; --accent:#e4572e; --bg:#fbfbf9; --muted:#8a9099; }
+  :root{ --ink:#111418; --dot:#9fa5ad; --dotDone:#111418; --accent:#e4572e; --bg:#fbfbf9; --muted:#8a9099; }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
@@ -32,7 +32,7 @@
     border:1px solid #d7dbe0;border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05);
     text-decoration:none;display:inline-block;}
   #btns button:hover,#btns a:hover{border-color:var(--accent);color:var(--accent);}
-  #hint{position:fixed;left:0;right:0;bottom:26px;text-align:center;font-size:13px;color:var(--muted);transition:opacity .4s;}
+  #hint{position:fixed;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:19px;font-weight:600;color:var(--muted);transition:opacity .4s;pointer-events:none;}
   #done{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--ink);color:#fff;
     padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:opacity .5s;pointer-events:none;}
   /* "From a distance" mini — live <use> mirror of the artwork */
@@ -147,7 +147,7 @@
     const bb=full.getBBox();
     const pad=Math.max(bb.width,bb.height)*0.04;
     svg.setAttribute("viewBox",[bb.x-pad,bb.y-pad,bb.width+2*pad,bb.height+2*pad].join(" "));
-    const R=Math.max(bb.width,bb.height)*0.0013;
+    const R=Math.max(bb.width,bb.height)*0.00143;
 
     // "From a distance" mini: live <use> mirror of #artRoot (see FROM-A-DISTANCE-MINI.md).
     const mini=document.getElementById("mini");
