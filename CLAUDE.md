@@ -101,6 +101,7 @@ All live near the top of the `<style>` and `<script>` blocks in `index.html`:
 | Colors | `--ink`, `--dot`, `--dotDone`, `--accent`, `--bg`, `--muted` CSS vars | |
 | Line weight | `stroke-width: 2` on `.ink` (CSS) | Uses `vector-effect: non-scaling-stroke`, so it's in screen pixels. |
 | Dot size | `R = Math.max(bb.width,bb.height)*0.0013` (JS) | Same factor in all three modes (`R`/`R0`). Kept small so the image isn't easy to read before the line is drawn. In watch.html the pen nib is `R*3.8` to stay its own size independent of the dots. |
+| "From a distance" mini (index.html) | `MINI_AT=0.12`, `SHRINK_A=0.965`, `SHRINK_B=0.995`, `SHRINK_END=0.62` | Live `<use href="#artRoot">` mirror, bottom-left; pattern doc: `FROM-A-DISTANCE-MINI.md` (in `_CLAUDE CODE PROJECTS`). Appears once the image resolves; the step-back finale scales the whole SVG in the post-completion scroll buffer (scroll-driven, rewinds). RULE: anything the boot appends to the artwork SVG must go **inside `#artRoot`** or the mini won't mirror it (the hidden `#full` and the temporary measuring path stay outside deliberately). |
 | Numbers toggle | the `#toggleNums` button / `body.shownums .num` CSS | Numbers are hidden by default (1,000 is dense); button reveals them. |
 
 Play-mode tunables (all near the top of `boot()` in `play.html`):
