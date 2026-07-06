@@ -79,6 +79,8 @@
   #nextBtn:hover{background:var(--ink);}
   @media (max-width:600px){
     #nextBtn{top:64px;bottom:auto;}   /* clear of the wrapped button rows */
+    /* Tidy the header: drop the long credit + subtitle so title + count stay on one line. */
+    #credit,#title span{display:none;}
   }
   .bcFrom{font-size:11px;color:var(--muted);}
   .bcBook{font-size:13px;font-weight:700;max-width:240px;}

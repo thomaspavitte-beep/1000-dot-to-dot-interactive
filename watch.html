@@ -37,6 +37,8 @@
   #playBtn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
   #speedBtn{min-width:56px;}
   @media (max-width:560px){ #controls{bottom:70px;} }
+  /* Tidy the header on mobile: drop the long credit + subtitle. */
+  @media (max-width:600px){ #credit,#title span{display:none;} }
   #done{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--ink);color:#fff;
     padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:opacity .5s;pointer-events:none;z-index:5;}
   @media (max-width:560px){ #done{bottom:118px;} }

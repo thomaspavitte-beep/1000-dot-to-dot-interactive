@@ -47,6 +47,8 @@
     /* Simplified mobile scroll experience: just the drawing. */
     #mini{display:none;}
     #btns #playLink,#btns #watchLink,#btns #toggleNums{display:none;}
+    /* Tidy the header: drop the long credit + subtitle so title + count stay on one line. */
+    #credit,#title span{display:none;}
   }
   /* "Next drawing" prompt at the completion beat (populated from art/manifest.js) */
   #nextBtn{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;
