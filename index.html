@@ -44,9 +44,9 @@
     border:1px solid #d7dbe0;border-radius:10px;}
   #miniLabel{font-size:11px;color:var(--muted);text-align:center;margin-top:5px;}
   @media (max-width:600px){
-    #mini{width:92px;left:16px;bottom:106px;}  /* clears the hint and the wrapped button rows */
-    #mini.big{width:180px;}
-    #miniLabel{display:none;}
+    /* Simplified mobile scroll experience: just the drawing. */
+    #mini{display:none;}
+    #btns #playLink,#btns #watchLink,#btns #toggleNums{display:none;}
   }
   /* "Next drawing" prompt at the completion beat (populated from art/manifest.js) */
   #nextBtn{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;
