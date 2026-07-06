@@ -48,6 +48,15 @@
     #mini.big{width:180px;}
     #miniLabel{display:none;}
   }
+  /* "Next drawing" prompt at the completion beat (populated from art/manifest.js) */
+  #nextBtn{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;
+    padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;text-decoration:none;z-index:6;
+    opacity:0;pointer-events:none;transition:opacity .5s;box-shadow:0 2px 8px rgba(228,87,46,.35);}
+  #nextBtn.show{opacity:1;pointer-events:auto;}
+  #nextBtn:hover{background:var(--ink);}
+  @media (max-width:600px){
+    #nextBtn{top:64px;bottom:auto;}   /* clear of the wrapped button rows */
+  }
   /* Featured-drawings switcher (populated from art/manifest.js) */
   #gallery{position:fixed;right:20px;bottom:64px;background:#fff;border:1px solid #d7dbe0;border-radius:14px;
     padding:8px;z-index:7;box-shadow:0 8px 28px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto;
@@ -104,6 +113,7 @@
   </div>
   <div id="hint">Scroll to connect the dots and complete the drawing</div>
   <div id="done">&#10003; Complete &mdash; all 1000 dots connected</div>
+  <a id="nextBtn" href="#"></a>
 
   <script>
     // Always start at the very top with an empty drawing.
@@ -240,6 +250,8 @@
       done.style.opacity=reached>=N?1:0;
       const bc=document.getElementById("bookCard");
       if(bc.dataset.ready) bc.classList.toggle("show",reached>=N);
+      const nb=document.getElementById("nextBtn");
+      if(nb.dataset.ready) nb.classList.toggle("show",reached>=N);
 
       // "From a distance": step-back finale in the post-completion scroll buffer,
       // scroll-driven so it rewinds. Mini bows out while the finale plays.
@@ -338,6 +350,15 @@
           }
           bc.appendChild(tx);
           bc.dataset.ready="1";
+        }
+        // "Next drawing" prompt at the completion beat (manifest order, wraps around).
+        const idx=list.findIndex(function(a){ return a.id===cur; });
+        const next=list.length>1?list[(idx+1)%list.length]:null;
+        if(next&&next.id!==cur){
+          const nb=document.getElementById("nextBtn");
+          nb.href="?art="+encodeURIComponent(next.id);
+          nb.textContent="Next: "+next.title+" →";
+          nb.dataset.ready="1";
         }
       };
       s.onerror=function(){};

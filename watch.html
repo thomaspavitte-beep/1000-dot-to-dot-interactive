@@ -25,10 +25,14 @@
   #count{margin-left:auto;font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;color:var(--muted);}
   #controls{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:6;display:flex;gap:8px;}
   #btns{position:fixed;right:20px;bottom:22px;z-index:6;display:flex;gap:8px;}
-  #controls button,#btns button,#btns a{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:#fff;
+  #controls button,#controls a,#btns button,#btns a{font:inherit;font-size:13px;font-weight:600;color:var(--ink);background:#fff;
     border:1px solid #d7dbe0;border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05);
     text-decoration:none;display:inline-block;}
-  #controls button:hover,#btns button:hover,#btns a:hover{border-color:var(--accent);color:var(--accent);}
+  #controls button:hover,#controls a:hover,#btns button:hover,#btns a:hover{border-color:var(--accent);color:var(--accent);}
+  /* "Next drawing" prompt joins the controls row at the completion beat */
+  #nextBtn{display:none;background:var(--accent);border-color:var(--accent);color:#fff;}
+  #nextBtn.show{display:inline-block;}
+  #nextBtn:hover{background:var(--ink);border-color:var(--ink);color:#fff;}
   #playBtn{min-width:76px;background:var(--ink);color:#fff;border-color:var(--ink);}
   #playBtn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
   #speedBtn{min-width:56px;}
@@ -84,6 +88,7 @@
     <button id="playBtn">Pause</button>
     <button id="speedBtn" title="Drawing speed">1&times;</button>
     <button id="restartBtn">Restart</button>
+    <a id="nextBtn" href="#"></a>
   </div>
   <div id="btns">
     <button id="galBtn" style="display:none">Drawings</button>
@@ -190,6 +195,8 @@
         nib.style.opacity=finished?0:1;
         const bc=document.getElementById("bookCard");
         if(bc.dataset.ready) bc.classList.toggle("show",finished);
+        const nb=document.getElementById("nextBtn");
+        if(nb.dataset.ready) nb.classList.toggle("show",finished);
         if(finished&&playing){ playing=false; setPlayLabel(); }
       }
 
@@ -302,6 +309,15 @@
           }
           bc.appendChild(tx);
           bc.dataset.ready="1";
+        }
+        // "Next drawing" prompt at the completion beat (manifest order, wraps around).
+        const idx=list.findIndex(function(a){ return a.id===cur; });
+        const next=list.length>1?list[(idx+1)%list.length]:null;
+        if(next&&next.id!==cur){
+          const nb=document.getElementById("nextBtn");
+          nb.href="?art="+encodeURIComponent(next.id);
+          nb.textContent="Next: "+next.title+" →";
+          nb.dataset.ready="1";
         }
       };
       s.onerror=function(){};

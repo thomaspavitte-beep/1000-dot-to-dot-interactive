@@ -71,6 +71,12 @@ manifest entry for the current artwork has a `book`; it is gated by
 `bookCard.dataset.ready` so a missing manifest can never show an empty card.
 Every artwork (including Elvis) shows its own drawing title in the HUD.
 
+A "Next: <title> →" prompt (`#nextBtn`) also appears at the completion beat on
+all three pages — manifest order, wrapping at the end, linking `?art=<next>` so
+visitors flow through the gallery without opening the switcher. Same
+`dataset.ready` gating; accent pill bottom-centre on index/play (top-centre on
+mobile, clear of the wrapped button rows), joins the `#controls` row in watch.
+
 ## How it works (architecture)
 The reveal is **geometry-based, not dash-based** — this is the most important
 thing to understand before changing anything.

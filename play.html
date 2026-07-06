@@ -71,6 +71,15 @@
     pointer-events:none;z-index:5;box-shadow:0 4px 18px rgba(0,0,0,.1);}
   #bookCard.show{opacity:1;pointer-events:auto;}
   #bookCard .galCover{width:44px;height:60px;font-size:18px;}
+  /* "Next drawing" prompt at the completion beat (populated from art/manifest.js) */
+  #nextBtn{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--accent);color:#fff;
+    padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;text-decoration:none;z-index:6;
+    opacity:0;pointer-events:none;transition:opacity .5s;box-shadow:0 2px 8px rgba(228,87,46,.35);}
+  #nextBtn.show{opacity:1;pointer-events:auto;}
+  #nextBtn:hover{background:var(--ink);}
+  @media (max-width:600px){
+    #nextBtn{top:64px;bottom:auto;}   /* clear of the wrapped button rows */
+  }
   .bcFrom{font-size:11px;color:var(--muted);}
   .bcBook{font-size:13px;font-weight:700;max-width:240px;}
   .bcBuy{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;}
@@ -109,6 +118,7 @@
   <div id="hint">Tap dot 1 to start &middot; drag to pan, pinch or scroll-wheel to zoom</div>
   <button id="showme">Show me the next dot</button>
   <div id="done">&#10003; Complete &mdash; you connected all 1000 dots</div>
+  <a id="nextBtn" href="#"></a>
   <div id="resume">
     <p id="resumeMsg">Continue where you left off?</p>
     <button id="resumeYes">Continue</button>
@@ -241,6 +251,8 @@
         }
         const bc=document.getElementById("bookCard");
         if(bc.dataset.ready) bc.classList.toggle("show",reached>=N);
+        const nb=document.getElementById("nextBtn");
+        if(nb.dataset.ready) nb.classList.toggle("show",reached>=N);
         positionTarget();
       }
       function setReached(r){   // bulk jump (resume / reset)
@@ -463,6 +475,15 @@
           }
           bc.appendChild(tx);
           bc.dataset.ready="1";
+        }
+        // "Next drawing" prompt at the completion beat (manifest order, wraps around).
+        const idx=list.findIndex(function(a){ return a.id===cur; });
+        const next=list.length>1?list[(idx+1)%list.length]:null;
+        if(next&&next.id!==cur){
+          const nb=document.getElementById("nextBtn");
+          nb.href="?art="+encodeURIComponent(next.id);
+          nb.textContent="Next: "+next.title+" →";
+          nb.dataset.ready="1";
         }
       };
       s.onerror=function(){};
