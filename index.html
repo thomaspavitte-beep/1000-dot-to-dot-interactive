@@ -15,7 +15,7 @@
   svg{width:min(94vw,94vh);height:min(94vw,94vh);display:block;}
   #full{fill:none;stroke:none;}                 /* hidden; only used for measuring */
   .ink{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;
-    stroke-linejoin:round;vector-effect:non-scaling-stroke;}
+    stroke-linejoin:round;}  /* width set in user units at boot so the mini + finale scale it proportionally */
   .dot{fill:var(--dot);transition:fill .25s;}
   .dot.done{fill:var(--dotDone);}
   .num{fill:var(--muted);font-size:7px;font-family:inherit;pointer-events:none;opacity:0;}
@@ -144,6 +144,18 @@
     document.getElementById("miniSvg").setAttribute("viewBox",[bb.x-pad,bb.y-pad,bb.width+2*pad,bb.height+2*pad].join(" "));
     mini.addEventListener("click",()=>mini.classList.toggle("big"));
 
+    // Line weight: 2 screen px at the fitted size, expressed in USER units
+    // (not vector-effect:non-scaling-stroke) so the mini and the step-back
+    // finale shrink the line proportionally, like scaling a print.
+    const VBW=bb.width+2*pad, VBH=bb.height+2*pad;
+    function inkWidth(){
+      const rct=svg.getBoundingClientRect();
+      const s=Math.min(rct.width/VBW,rct.height/VBH)||1;
+      const w=2/s;
+      inkDone.style.strokeWidth=w; inkPartial.style.strokeWidth=w;
+    }
+    inkWidth();
+
     // Per-artwork metadata in the HUD / done badge.
     const PTS=art.dots, N=PTS.length;
     const t=document.getElementById("title");
@@ -246,6 +258,7 @@
       const v=[b.x-pd,b.y-pd,b.width+2*pd,b.height+2*pd].join(" ");
       svg.setAttribute("viewBox",v);
       document.getElementById("miniSvg").setAttribute("viewBox",v);
+      inkWidth();
     });
     document.getElementById("toggleNums").addEventListener("click",e=>{
       document.body.classList.toggle("shownums");
