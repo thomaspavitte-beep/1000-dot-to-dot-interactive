@@ -155,6 +155,9 @@
     const mini=document.getElementById("mini");
     document.getElementById("miniSvg").setAttribute("viewBox",[bb.x-pad,bb.y-pad,bb.width+2*pad,bb.height+2*pad].join(" "));
     mini.addEventListener("click",()=>mini.classList.toggle("big"));
+    // Skip the step-back shrink finale on mobile — the drawing is already small there.
+    const finaleMQ=window.matchMedia("(max-width:600px)");
+    finaleMQ.addEventListener("change",e=>{ if(e.matches) svg.style.transform=""; });
 
     // Line weight: 2 screen px at the fitted size, expressed in USER units
     // (not vector-effect:non-scaling-stroke) so the mini and the step-back
@@ -259,7 +262,7 @@
       // scroll-driven so it rewinds. Mini bows out while the finale plays.
       const rawMax=track.scrollHeight-window.innerHeight;
       const rawP=rawMax>0?Math.min(1,Math.max(0,window.scrollY/rawMax)):0;
-      const shrink=Math.min(1,Math.max(0,(rawP-SHRINK_A)/(SHRINK_B-SHRINK_A)));
+      const shrink=finaleMQ.matches?0:Math.min(1,Math.max(0,(rawP-SHRINK_A)/(SHRINK_B-SHRINK_A)));
       svg.style.transform=shrink>0?"scale("+(1-shrink*SHRINK_END).toFixed(4)+")":"";
       mini.classList.toggle("show",current>MINI_AT&&shrink===0);
       if(current!==target) raf=requestAnimationFrame(render); else raf=null;
