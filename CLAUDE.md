@@ -87,11 +87,19 @@ thing to understand before changing anything.
 - `lenAt[]` = cumulative path length at each dot, measured once at load.
 - On scroll, `current` (0→1, eased) gives `drawn = LEN * current`, and
   `dotsReached(drawn)` returns how many dots are connected.
-- The **visible line is rebuilt from `cmds`**: `#inkDone` holds the finished
-  segments (exact geometry, updated incrementally as dots are reached), and
-  `#inkPartial` is a short straight line from the last reached dot to the exact
-  current point. The dots' black coloring is driven by the **same** `reached`
-  count.
+- The **visible line is rebuilt from `cmds`**: `#inkDone` (a `<g>` in
+  index/watch) holds the finished segments as **chunked paths** — every 64
+  completed commands are committed into an immutable chunk `<path>` (d strings
+  precomputed at boot, each prefixed with an M to the previous dot so the
+  stroke abuts seamlessly), and only a small `#inkActive` path (≤64 cmds,
+  <1KB) is rewritten as dots are reached. This keeps per-frame path parsing
+  constant instead of growing to the full ~30KB line (≈93% less parse work
+  late in the drawing — the source of scroll micro-stutter before v5).
+  Rewinds pop chunks. Geometry is exactly equivalent to one continuous path.
+  `#inkPartial` is a short straight line from the last reached dot to the
+  exact current point. The dots' black coloring is driven by the **same**
+  `reached` count. (play.html keeps the simpler single-path `setDone` — it
+  redraws once per tap, not continuously.)
 
 Because the line and the dots are both driven by one shared `reached`, they are
 physically locked together and **cannot drift apart**.
